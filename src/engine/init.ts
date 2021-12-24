@@ -26,5 +26,3 @@ onresize();
 setupKeyListener();
 
 console.log('INITIALIZING');
-
-import '../debug';
