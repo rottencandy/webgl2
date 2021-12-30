@@ -42,4 +42,4 @@ cam.recalculate();
 shader.uniform('uMat').m4fv(cam.matrix);
 
 ctx.clear();
-ctx.draw(16);
+ctx.draw(6 * 6);
