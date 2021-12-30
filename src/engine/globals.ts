@@ -33,7 +33,8 @@ export const
     TAN = M.tan,
     HYPOT = M.hypot,
     isOdd = (x: number) => x % 2,
-    F32 = (x: number[]) => new Float32Array(x),
+    radians = (a: number) => a *  PI / 180,
+    F32 = (x: Iterable<number>) => new Float32Array(x),
     /** Initialize an array with consecutive numbers for use as state enum */
     numArray = (n: number) => Array.from({ length: n }).map((_, i) => i),
 

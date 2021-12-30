@@ -16,7 +16,7 @@ import {
     GL_VERTEX_SHADER,
 } from './gl-constants';
 
-const clearFn = (gl: WebGL2RenderingContext) => (r = 0., g = 0., b = 0., a = 1.) => {
+const clearFn = (gl: WebGL2RenderingContext) => (r = .1, g = .1, b = .1, a = 1.) => {
     gl.clearColor(r, g, b, a);
     gl.clearDepth(1.);
     gl.clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -83,18 +83,19 @@ type VAOState = {
     vao: WebGLVertexArrayObject;
     bind: () => VAOState;
     unbind: () => VAOState;
-    enable: () => VAOState;
-    setPointer: (size: number, type?: number, normalize?: boolean, stride?: number, offset?: number) => VAOState;
+    enable: (loc: number) => VAOState;
+    setPointer: (loc: number, size: number, stride?: number, offset?: number, type?: number, normalize?: boolean) => VAOState;
 };
 
-const createVAOFns = (gl: WebGL2RenderingContext) => (loc: number): VAOState => {
+const createVAOFns = (gl: WebGL2RenderingContext) => (): VAOState => {
     const vao = gl.createVertexArray();
     return {
         vao,
         bind() { gl.bindVertexArray(vao); return this; },
         unbind() { gl.bindVertexArray(null); return this; },
-        enable() { gl.enableVertexAttribArray(loc); return this; },
-        setPointer(size, type = GL_FLOAT, normalize = false, stride = 0, offset = 0) {
+        // TODO: combine enable & set?
+        enable(loc: number) { gl.enableVertexAttribArray(loc); return this; },
+        setPointer(loc, size, stride = 0, offset = 0, type = GL_FLOAT, normalize = false) {
             gl.vertexAttribPointer(loc, size, type, normalize, stride, offset); return this;
         },
     };

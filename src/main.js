@@ -1,19 +1,20 @@
 import { startLoop } from './engine/loop';
 import { createGLContext } from './engine/webgl2';
-import { CANVAS, GAME_WIDTH, GAME_HEIGHT } from './engine/globals';
-import { Plane } from './engine/shapes';
+import { CANVAS, radians } from './engine/globals';
+import { Camera } from './engine/cam';
+import { Cube } from './vertices';
+import { sliderNoLoop } from './debug';
 
 const ctx = createGLContext(CANVAS);
 
 const shader = ctx.createShader(
     `#version 300 es
 precision mediump float;
-in vec2 aPos;
-uniform vec2 uRes;
+in vec4 aPos;
+uniform mat4 uMat;
 
 void main() {
-vec2 clipSpace = (aPos / uRes) * 2. - 1.;
-gl_Position = vec4(clipSpace * vec2(1, -1), 0, 1);
+gl_Position = uMat * aPos;
 }`,
     `#version 300 es
 precision mediump float;
@@ -24,10 +25,21 @@ outColor = vec4(.1, .7, .5, 1);
 }`
 ).use();
 
-shader.uniform('uRes').u2f(GAME_WIDTH, GAME_HEIGHT);
-ctx.createBuffer().bind().setData(Plane(100));
+ctx.createBuffer().bind().setData(Cube(10));
 
-ctx.createVAO(shader.attribLoc('aPos')).bind().enable().setPointer(2);
+ctx
+    .createVAO()
+    .bind()
+    .enable(shader.attribLoc('aPos'))
+    .setPointer(shader.attribLoc('aPos'), 3, 24);
+//    .enable(shader.attribLoc('aNorm'))
+//    .setPointer(shader.attribLoc('aNorm'), 3, 24, 12);
 
-ctx.clear(.1, .1, .1);
-ctx.draw(6);
+const cam = Camera(radians(45), 1, 500);
+cam.moveTo(20, 20, 20);
+cam.recalculate();
+
+shader.uniform('uMat').m4fv(cam.matrix);
+
+ctx.clear();
+ctx.draw(16);
