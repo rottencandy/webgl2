@@ -5,6 +5,7 @@ import {
     GL_CULL_FACE,
     GL_DEPTH_BUFFER_BIT,
     GL_DEPTH_TEST,
+    GL_ELEMENT_ARRAY_BUFFER,
     GL_FLOAT,
     GL_FRAGMENT_SHADER,
     GL_LEQUAL,
@@ -13,6 +14,7 @@ import {
     GL_SRC_ALPHA,
     GL_STATIC_DRAW,
     GL_TRIANGLES,
+    GL_UNSIGNED_SHORT,
     GL_VERTEX_SHADER,
 } from './gl-constants';
 
@@ -116,6 +118,21 @@ const createBufferFns = (gl: WebGL2RenderingContext) => (target = GL_ARRAY_BUFFE
     };
 };
 
+type EBState = {
+    buf: WebGLBuffer;
+    bind: () => EBState;
+    setIndices: (data: number[]) => EBState;
+};
+
+const createElementBufferFns = (gl: WebGL2RenderingContext) => (mode = GL_STATIC_DRAW): EBState => {
+    const buf = gl.createBuffer();
+    return {
+        buf,
+        bind() { gl.bindBuffer(GL_ELEMENT_ARRAY_BUFFER, buf); return this; },
+        setIndices(data) { gl.bufferData(GL_ELEMENT_ARRAY_BUFFER, new Uint16Array(data), mode); return this; },
+    };
+};
+
 export const createGLContext = (canvas: HTMLCanvasElement) => {
     const gl = canvas.getContext('webgl2');
     if (!gl) {
@@ -136,7 +153,9 @@ export const createGLContext = (canvas: HTMLCanvasElement) => {
         clear: clearFn(gl),
         createShader: createShaderFns(gl),
         createBuffer: createBufferFns(gl),
+        createElementBuffer: createElementBufferFns(gl),
         createVAO: createVAOFns(gl),
         draw: (count: number, mode = GL_TRIANGLES, offset = 0) => gl.drawArrays(mode, offset, count),
+        drawElements: (count: number, mode = GL_TRIANGLES, offset = 0) => gl.drawElements(mode, count, GL_UNSIGNED_SHORT, offset),
     };
 };
