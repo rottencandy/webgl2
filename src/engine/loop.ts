@@ -1,8 +1,5 @@
 import { RAF, MIN } from './globals';
 
-// TODO call init somewhere else :/
-import './init';
-
 type StepFn = (delta: number) => void;
 
 /**

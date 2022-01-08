@@ -1,4 +1,3 @@
-import { GAME_WIDTH, GAME_HEIGHT } from './globals';
 import { Matrix, M4lookAt, M4create, M4multiply, M4perspective, M4clone } from '../math/mat4';
 import { Vector, V3set, V3create } from '../math/vec3';
 
@@ -31,7 +30,7 @@ type CamState = {
 /**
  * Create webgl camera
  */
-const Camera = (fov: number, zNear: number, zFar: number, aspect = GAME_WIDTH / GAME_HEIGHT): CamState => {
+const Camera = (fov: number, zNear: number, zFar: number, aspect: number): CamState => {
     const projectionMat = M4perspective(M4create(), fov, aspect, zNear, zFar);
     const viewMat = M4create();
 

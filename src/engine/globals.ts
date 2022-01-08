@@ -1,24 +1,14 @@
 const M = Math;
 
+/** Alias for `document.getElementById()` */
 export const getById = (id: string) => document.getElementById(id) as HTMLCanvasElement;
 
-export let CANVAS: HTMLCanvasElement = getById('c');
-
 export const
-    GAME_WIDTH = 400,
-    GAME_HEIGHT = 300,
-    ASPECT = GAME_HEIGHT / GAME_WIDTH,
-
-    FOV = 1.5708,
-    ZNEAR = 1,
-    ZFAR = 2000,
-
     WIDTH = 'width',
     HEIGHT = 'height',
     STYLE = 'style',
 
-    /** Alias for `document.getElementById()` */
-    deviceScaleRatio = () => MIN(innerWidth / GAME_WIDTH, innerHeight / GAME_HEIGHT),
+    deviceScaleRatio = (width: number, height: number) => MIN(innerWidth / width, innerHeight / height),
     RAF = requestAnimationFrame,
 
     // Math aliases
@@ -33,7 +23,7 @@ export const
     TAN = M.tan,
     HYPOT = M.hypot,
     isOdd = (x: number) => x % 2,
-    radians = (a: number) => a *  PI / 180,
+    radians = (a: number) => a * PI / 180,
     F32 = (x: Iterable<number>) => new Float32Array(x),
     /** Initialize an array with consecutive numbers for use as state enum */
     numArray = (n: number) => Array.from({ length: n }).map((_, i) => i),
@@ -46,7 +36,4 @@ export const
     // FP utils
     compose = (...fns: any[]) => (...args: any[]) => fns.reduceRight((res, fn) => [fn.call(0, ...res)], args)[0],
     // identity
-    Id = () => { },
-
-    /** Set Canvas element */
-    setCanvas = (ele: HTMLCanvasElement) => CANVAS = ele;
+    Id = () => { };

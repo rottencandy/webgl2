@@ -17,6 +17,8 @@ import {
     GL_UNSIGNED_SHORT,
     GL_VERTEX_SHADER,
 } from './gl-constants';
+import { deviceScaleRatio, getById } from './globals';
+import { setupKeyListener } from './input';
 
 const clearFn = (gl: WebGL2RenderingContext) => (r = .1, g = .1, b = .1, a = 1.) => {
     gl.clearColor(r, g, b, a);
@@ -133,7 +135,7 @@ const createElementBufferFns = (gl: WebGL2RenderingContext) => (mode = GL_STATIC
     };
 };
 
-export const createGLContext = (canvas: HTMLCanvasElement) => {
+export const createGLContext = (canvas: HTMLCanvasElement, width = 400, height = 300) => {
     const gl = canvas.getContext('webgl2');
     if (!gl) {
         // TODO remove before release
@@ -141,12 +143,16 @@ export const createGLContext = (canvas: HTMLCanvasElement) => {
         throw new Error('Could not get webgl2 context!');
     };
 
+    canvas.width = width;
+    canvas.height = height;
+
     gl.viewport(0, 0, canvas.width, canvas.height);
     gl.enable(GL_CULL_FACE);
     gl.enable(GL_DEPTH_TEST);
     gl.enable(GL_BLEND);
     gl.depthFunc(GL_LEQUAL);
     gl.blendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    setupKeyListener(canvas, width, height);
 
     return {
         gl,
@@ -157,5 +163,12 @@ export const createGLContext = (canvas: HTMLCanvasElement) => {
         createVAO: createVAOFns(gl),
         draw: (count: number, mode = GL_TRIANGLES, offset = 0) => gl.drawArrays(mode, offset, count),
         drawElements: (count: number, mode = GL_TRIANGLES, offset = 0) => gl.drawElements(mode, count, GL_UNSIGNED_SHORT, offset),
+        resize() {
+            const ratio = deviceScaleRatio(width, height);
+            canvas.style.width = width * ratio + 'px';
+            canvas.style.height = height * ratio + 'px';
+            // display note if device is in potrait
+            getById('d').style.display = innerWidth < innerHeight ? 'block' : 'none';
+        },
     };
 };

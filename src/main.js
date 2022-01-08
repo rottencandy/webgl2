@@ -1,12 +1,14 @@
 import { startLoop } from './engine/loop';
 import { createGLContext } from './engine/webgl2';
-import { CANVAS, radians } from './engine/globals';
+import { getById, radians } from './engine/globals';
 import Camera from './engine/cam';
 import { vertexNormalFragShader, fragmentPhongLightShader } from './shaders';
 import { Cube } from './vertices';
 import { sliderNoLoop } from './debug';
 
-const ctx = createGLContext(CANVAS);
+const ctx = createGLContext(getById('c'));
+ctx.resize();
+onresize = ctx.resize;
 
 const shader = ctx.createShader(
     vertexNormalFragShader,
@@ -26,7 +28,7 @@ ctx
 
 ctx.createElementBuffer().bind().setIndices(verts.indices);
 
-const cam = Camera(radians(45), 1, 500)
+const cam = Camera(radians(45), 1, 500, 400 / 300)
     .moveTo(20, 20, 20)
     .recalculate();
 

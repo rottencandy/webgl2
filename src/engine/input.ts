@@ -1,4 +1,4 @@
-import { CANVAS, deviceScaleRatio } from './globals';
+import { deviceScaleRatio } from './globals';
 
 type WatchedKeys = {
     left: boolean,
@@ -31,7 +31,7 @@ const ARROW = 'Arrow';
 /**
  * Initialize onkey listeners
 */
-export const setupKeyListener = () => {
+export const setupKeyListener = (canvas: HTMLCanvasElement, width: number, height: number) => {
     const setKeyState = (value: boolean) => ({ key: code }) => {
         switch (code) {
             case ARROW + 'Up':
@@ -63,20 +63,20 @@ export const setupKeyListener = () => {
     onkeydown = setKeyState(!!1);
     onkeyup = setKeyState(!!0);
 
-    CANVAS.onpointerdown = () => Keys.clicked = !!1;
-    CANVAS.onpointerup = () => Keys.clicked = !!0;
-    CANVAS.onpointermove = e => {
-        const ratio = deviceScaleRatio();
+    canvas.onpointerdown = () => Keys.clicked = !!1;
+    canvas.onpointerup = () => Keys.clicked = !!0;
+    canvas.onpointermove = e => {
+        const ratio = deviceScaleRatio(width, height);
         Keys.touchX = e.offsetX / ratio;
         Keys.touchY = e.offsetY / ratio;
     }
 
-    CANVAS.ontouchstart = CANVAS.ontouchmove = CANVAS.ontouchend = CANVAS.ontouchcancel = e => {
+    canvas.ontouchstart = canvas.ontouchmove = canvas.ontouchend = canvas.ontouchcancel = e => {
         e.preventDefault();
         Keys.clicked = e.touches.length > 0;
         if (Keys.clicked) {
-            const offset = CANVAS.getBoundingClientRect();
-            const ratio = deviceScaleRatio();
+            const offset = canvas.getBoundingClientRect();
+            const ratio = deviceScaleRatio(width, height);
             Keys.touchX = (e.touches[0].clientX - offset.left) / ratio;
             // offset.top is not needed since canvas is always stuck to top
             Keys.touchY = e.touches[0].clientY / ratio;
