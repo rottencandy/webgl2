@@ -108,7 +108,7 @@ void main() {
 * vec3 uLightPos = global light position
 * vec3 uCam = global camera position
 */
-export const fragmentPhongLightShader: string = `#version 300 es
+export const fragmentPhongShader: string = `#version 300 es
 precision lowp float;
 in vec3 vNormal, vFragPos;
 uniform vec3 uColor, uLightPos, uCam;
