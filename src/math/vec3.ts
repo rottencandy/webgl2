@@ -1,4 +1,4 @@
-import { F32, HYPOT, SQRT } from '../engine/globals';
+import { F32, HYPOT, SQRT } from '../globals';
 
 // source: https://github.com/toji/gl-matrix
 

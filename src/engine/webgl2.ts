@@ -17,7 +17,7 @@ import {
     GL_UNSIGNED_SHORT,
     GL_VERTEX_SHADER,
 } from './gl-constants';
-import { deviceScaleRatio, getById } from './globals';
+import { deviceScaleRatio, getById } from '../globals';
 import { setupKeyListener } from './input';
 
 const clearFn = (gl: WebGL2RenderingContext) => (r = .1, g = .1, b = .1, a = 1.) => {

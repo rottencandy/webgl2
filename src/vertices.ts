@@ -1,4 +1,6 @@
-import { F32 } from './engine/globals';
+import { F32 } from './globals';
+
+// plane {{{
 
 export const Plane = (s: number) => F32([
     0, 0,
@@ -8,6 +10,10 @@ export const Plane = (s: number) => F32([
     s, s,
     s, 0,
 ]);
+
+// }}}
+
+// cube {{{
 
 export const Cube = (s: number) => ({
     data: F32([
@@ -75,3 +81,7 @@ export const Cube = (s: number) => ({
         20, 21, 22, 20, 22, 23,
     ],
 });
+
+// }}}
+
+// vim: fdm=marker:fdl=0

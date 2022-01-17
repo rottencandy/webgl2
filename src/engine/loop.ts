@@ -1,4 +1,4 @@
-import { RAF, MIN } from './globals';
+import { RAF, MIN } from '../globals';
 
 type StepFn = (delta: number) => void;
 

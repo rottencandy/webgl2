@@ -1,4 +1,4 @@
-import { deviceScaleRatio } from './globals';
+import { deviceScaleRatio } from '../globals';
 
 type WatchedKeys = {
     left: boolean,

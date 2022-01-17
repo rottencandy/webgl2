@@ -1,4 +1,4 @@
-import { F32, SIN, COS, TAN, ABS, HYPOT } from '../engine/globals';
+import { F32, SIN, COS, TAN, ABS, HYPOT } from '../globals';
 import { Vector } from './vec3';
 
 // source: https://github.com/toji/gl-matrix
