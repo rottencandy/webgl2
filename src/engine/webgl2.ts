@@ -69,12 +69,14 @@ const createShaderProgram = (gl: WebGL2RenderingContext, vShader: WebGLShader, f
         throw new Error('Program link failed!');
     }
 
-    return {
+    const thisObj: ShaderState = {
         prg,
         uniform: uniformSetterFns(gl, prg),
-        use() { gl.useProgram(prg); return this; },
+        use() { gl.useProgram(prg); return thisObj; },
         attribLoc: (name: string) => gl.getAttribLocation(prg, name),
     };
+
+    return thisObj;
 };
 
 const createShaderFns = (gl: WebGL2RenderingContext) => (vsSource: string, fsSource: string) => {
@@ -93,16 +95,17 @@ type VAOState = {
 
 const createVAOFns = (gl: WebGL2RenderingContext) => (): VAOState => {
     const vao = gl.createVertexArray();
-    return {
+    const thisObj: VAOState = {
         vao,
-        bind() { gl.bindVertexArray(vao); return this; },
-        unbind() { gl.bindVertexArray(null); return this; },
+        bind() { gl.bindVertexArray(vao); return thisObj; },
+        unbind() { gl.bindVertexArray(null); return thisObj; },
         // TODO: combine enable & set?
-        enable(loc: number) { gl.enableVertexAttribArray(loc); return this; },
+        enable(loc: number) { gl.enableVertexAttribArray(loc); return thisObj; },
         setPointer(loc, size, stride = 0, offset = 0, type = GL_FLOAT, normalize = false) {
-            gl.vertexAttribPointer(loc, size, type, normalize, stride, offset); return this;
+            gl.vertexAttribPointer(loc, size, type, normalize, stride, offset); return thisObj;
         },
     };
+    return thisObj;
 };
 
 type BufferState = {
@@ -113,11 +116,12 @@ type BufferState = {
 
 const createBufferFns = (gl: WebGL2RenderingContext) => (target = GL_ARRAY_BUFFER, mode = GL_STATIC_DRAW): BufferState => {
     const buf = gl.createBuffer();
-    return {
+    const thisObj: BufferState = {
         buf,
-        bind() { gl.bindBuffer(target, buf); return this; },
-        setData(data) { gl.bufferData(target, data, mode); return this; },
+        bind() { gl.bindBuffer(target, buf); return thisObj; },
+        setData(data) { gl.bufferData(target, data, mode); return thisObj; },
     };
+    return thisObj;
 };
 
 type EBState = {
@@ -128,14 +132,33 @@ type EBState = {
 
 const createElementBufferFns = (gl: WebGL2RenderingContext) => (mode = GL_STATIC_DRAW): EBState => {
     const buf = gl.createBuffer();
-    return {
+    const thisObj: EBState = {
         buf,
-        bind() { gl.bindBuffer(GL_ELEMENT_ARRAY_BUFFER, buf); return this; },
-        setIndices(data) { gl.bufferData(GL_ELEMENT_ARRAY_BUFFER, new Uint16Array(data), mode); return this; },
+        bind() { gl.bindBuffer(GL_ELEMENT_ARRAY_BUFFER, buf); return thisObj; },
+        setIndices(data) { gl.bufferData(GL_ELEMENT_ARRAY_BUFFER, new Uint16Array(data), mode); return thisObj; },
     };
+    return thisObj;
 };
 
-export const createGLContext = (canvas: HTMLCanvasElement, width = 400, height = 300) => {
+type WebglState = {
+    gl: WebGL2RenderingContext;
+    clear: (r?: number, g?: number, b?: number, a?: number) => void;
+    createShader: (vs: string, fs: string) => ShaderState;
+    createBuffer: (target?: number, mode?: number) => BufferState;
+    createElementBuffer: (mode?: number) => EBState;
+    createVAO: () => VAOState;
+    draw: (count: number, mode?: number, offset?: number) => void;
+    drawElements: (count: number, mode?: number, offset?: number) => void;
+    resize: () => void;
+    /**
+    * NOTE: Set up pointers immediately after creating mesh
+    * since VAO is enabled and recording.
+    * (Or if you use other VAOs, you might have to bind this one again)
+    */
+    createMesh: (data: Float32Array, indices: number[]) => { vao: VAOState, draw: () => void };
+};
+
+export const createGLContext = (canvas: HTMLCanvasElement, width = 400, height = 300): WebglState => {
     const gl = canvas.getContext('webgl2');
     if (!gl) {
         // TODO remove before release
@@ -154,15 +177,24 @@ export const createGLContext = (canvas: HTMLCanvasElement, width = 400, height =
     gl.blendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     setupKeyListener(canvas, width, height);
 
-    return {
+    const thisObj: WebglState = {
         gl,
         clear: clearFn(gl),
         createShader: createShaderFns(gl),
         createBuffer: createBufferFns(gl),
         createElementBuffer: createElementBufferFns(gl),
         createVAO: createVAOFns(gl),
-        draw: (count: number, mode = GL_TRIANGLES, offset = 0) => gl.drawArrays(mode, offset, count),
-        drawElements: (count: number, mode = GL_TRIANGLES, offset = 0) => gl.drawElements(mode, count, GL_UNSIGNED_SHORT, offset),
+        draw: (count, mode = GL_TRIANGLES, offset = 0) => gl.drawArrays(mode, offset, count),
+        drawElements: (count, mode = GL_TRIANGLES, offset = 0) => gl.drawElements(mode, count, GL_UNSIGNED_SHORT, offset),
+
+        createMesh(data, indices): { vao: VAOState, draw: () => void } {
+            const vao = thisObj.createVAO();
+            const count = indices.length;
+            vao.bind();
+            thisObj.createBuffer().bind().setData(data);
+            thisObj.createElementBuffer().bind().setIndices(indices);
+            return { vao, draw: () => thisObj.drawElements(count) };
+        },
         resize() {
             const ratio = deviceScaleRatio(width, height);
             canvas.style.width = width * ratio + 'px';
@@ -171,4 +203,6 @@ export const createGLContext = (canvas: HTMLCanvasElement, width = 400, height =
             getById('d').style.display = innerWidth < innerHeight ? 'block' : 'none';
         },
     };
+
+    return thisObj;
 };
