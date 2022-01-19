@@ -8,8 +8,11 @@ type WatchedKeys = {
     space: boolean,
     esc: boolean,
     clicked: boolean,
+    pointerLocked: boolean,
     touchX: number,
     touchY: number,
+    ptrX: number,
+    ptrY: number,
 };
 
 export const Keys: WatchedKeys = {
@@ -17,11 +20,17 @@ export const Keys: WatchedKeys = {
     right: !!0,
     up: !!0,
     down: !!0,
+
     space: !!0,
     esc: !!0,
+
     clicked: !!0,
     touchX: 0,
     touchY: 0,
+
+    pointerLocked: !!0,
+    ptrX: 0,
+    ptrY: 0,
 };
 
 export const dirKeysPressed = (): boolean => !!(Keys.left || Keys.right || Keys.up || Keys.down);
@@ -31,7 +40,7 @@ const ARROW = 'Arrow';
 /**
  * Initialize onkey listeners
 */
-export const setupKeyListener = (canvas: HTMLCanvasElement, width: number, height: number) => {
+export const setupKeyListener = (canvas: HTMLCanvasElement, width: number, height: number, lockPointer?: boolean) => {
     const setKeyState = (value: boolean) => ({ key: code }) => {
         switch (code) {
             case ARROW + 'Up':
@@ -69,7 +78,7 @@ export const setupKeyListener = (canvas: HTMLCanvasElement, width: number, heigh
         const ratio = deviceScaleRatio(width, height);
         Keys.touchX = e.offsetX / ratio;
         Keys.touchY = e.offsetY / ratio;
-    }
+    };
 
     canvas.ontouchstart = canvas.ontouchmove = canvas.ontouchend = canvas.ontouchcancel = e => {
         e.preventDefault();
@@ -81,7 +90,20 @@ export const setupKeyListener = (canvas: HTMLCanvasElement, width: number, heigh
             // offset.top is not needed since canvas is always stuck to top
             Keys.touchY = e.touches[0].clientY / ratio;
         }
-    }
-}
+    };
 
-// vim: fdm=marker:et:sw=2:
+    if (lockPointer) {
+        canvas.onclick = () => {
+            if (!Keys.pointerLocked) {
+                canvas.requestPointerLock();
+            }
+        };
+    }
+    document.addEventListener('pointerlockchange', () => {
+        Keys.pointerLocked = document.pointerLockElement === canvas;
+    });
+    document.addEventListener('mousemove', (e) => {
+        Keys.ptrX = e.movementX;
+        Keys.ptrY = e.movementY;
+    });
+};

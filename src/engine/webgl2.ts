@@ -175,7 +175,7 @@ export const createGLContext = (canvas: HTMLCanvasElement, width = 400, height =
     gl.enable(GL_BLEND);
     gl.depthFunc(GL_LEQUAL);
     gl.blendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    setupKeyListener(canvas, width, height);
+    setupKeyListener(canvas, width, height, true);
 
     const thisObj: WebglState = {
         gl,
