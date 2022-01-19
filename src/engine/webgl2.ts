@@ -20,9 +20,8 @@ import {
 import { deviceScaleRatio, getById } from '../globals';
 import { setupKeyListener } from './input';
 
-const clearFn = (gl: WebGL2RenderingContext) => (r = .1, g = .1, b = .1, a = 1.) => {
-    gl.clearColor(r, g, b, a);
-    gl.clearDepth(1.);
+const clearFn = (gl: WebGL2RenderingContext) => () => {
+    gl.clearColor(.1, .1, .1, 1.);
     gl.clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 };
 
@@ -63,10 +62,10 @@ const createShaderProgram = (gl: WebGL2RenderingContext, vShader: WebGLShader, f
     gl.linkProgram(prg);
 
     if (!gl.getProgramParameter(prg, GL_LINK_STATUS)) {
-        console.error('Link failed: ', gl.getProgramInfoLog(prg));
-        console.error('vs info-log: ', gl.getShaderInfoLog(vShader));
-        console.error('fs info-log: ', gl.getShaderInfoLog(fShader));
-        throw new Error('Program link failed!');
+        console.error('Program Link failed: ', gl.getProgramInfoLog(prg));
+        console.error('vs log: ', gl.getShaderInfoLog(vShader));
+        console.error('fs log: ', gl.getShaderInfoLog(fShader));
+        throw new Error;
     }
 
     const thisObj: ShaderState = {
@@ -88,21 +87,21 @@ const createShaderFns = (gl: WebGL2RenderingContext) => (vsSource: string, fsSou
 type VAOState = {
     vao: WebGLVertexArrayObject;
     bind: () => VAOState;
-    unbind: () => VAOState;
-    enable: (loc: number) => VAOState;
-    setPointer: (loc: number, size: number, stride?: number, offset?: number, type?: number, normalize?: boolean) => VAOState;
+    setPtr: (loc: number, size: number, stride?: number, offset?: number, type?: number, normalize?: boolean) => VAOState;
 };
 
 const createVAOFns = (gl: WebGL2RenderingContext) => (): VAOState => {
     const vao = gl.createVertexArray();
     const thisObj: VAOState = {
         vao,
-        bind() { gl.bindVertexArray(vao); return thisObj; },
-        unbind() { gl.bindVertexArray(null); return thisObj; },
-        // TODO: combine enable & set?
-        enable(loc: number) { gl.enableVertexAttribArray(loc); return thisObj; },
-        setPointer(loc, size, stride = 0, offset = 0, type = GL_FLOAT, normalize = false) {
-            gl.vertexAttribPointer(loc, size, type, normalize, stride, offset); return thisObj;
+        bind() {
+            gl.bindVertexArray(vao);
+            return thisObj;
+        },
+        setPtr(loc, size, stride = 0, offset = 0, type = GL_FLOAT, normalize = false) {
+            gl.enableVertexAttribArray(loc);
+            gl.vertexAttribPointer(loc, size, type, normalize, stride, offset);
+            return thisObj;
         },
     };
     return thisObj;
@@ -140,30 +139,26 @@ const createElementBufferFns = (gl: WebGL2RenderingContext) => (mode = GL_STATIC
     return thisObj;
 };
 
+type AttribPointers = [loc: number, size: number, stride?: number, offset?: number, type?: number, normalize?: boolean];
+
 type WebglState = {
     gl: WebGL2RenderingContext;
-    clear: (r?: number, g?: number, b?: number, a?: number) => void;
-    createShader: (vs: string, fs: string) => ShaderState;
-    createBuffer: (target?: number, mode?: number) => BufferState;
-    createElementBuffer: (mode?: number) => EBState;
-    createVAO: () => VAOState;
+    clear: () => void;
+    shader: (vs: string, fs: string) => ShaderState;
+    buffer: (target?: number, mode?: number) => BufferState;
+    elementBuffer: (mode?: number) => EBState;
+    VAO: () => VAOState;
     draw: (count: number, mode?: number, offset?: number) => void;
     drawElements: (count: number, mode?: number, offset?: number) => void;
     resize: () => void;
-    /**
-    * NOTE: Set up pointers immediately after creating mesh
-    * since VAO is enabled and recording.
-    * (Or if you use other VAOs, you might have to bind this one again)
-    */
-    createMesh: (data: Float32Array, indices: number[]) => { vao: VAOState, draw: () => void };
+    createMesh: (data: [Float32Array, number[]], attribs: AttribPointers[]) => { vao: VAOState, draw: () => void };
 };
 
 export const createGLContext = (canvas: HTMLCanvasElement, width = 400, height = 300): WebglState => {
     const gl = canvas.getContext('webgl2');
     if (!gl) {
-        // TODO remove before release
-        alert('Could not get webgl2 context!');
-        throw new Error('Could not get webgl2 context!');
+        alert('Could not get gl context');
+        throw new Error;
     };
 
     canvas.width = width;
@@ -175,25 +170,25 @@ export const createGLContext = (canvas: HTMLCanvasElement, width = 400, height =
     gl.enable(GL_BLEND);
     gl.depthFunc(GL_LEQUAL);
     gl.blendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    gl.clearDepth(1.);
     setupKeyListener(canvas, width, height, true);
 
     const thisObj: WebglState = {
         gl,
         clear: clearFn(gl),
-        createShader: createShaderFns(gl),
-        createBuffer: createBufferFns(gl),
-        createElementBuffer: createElementBufferFns(gl),
-        createVAO: createVAOFns(gl),
+        shader: createShaderFns(gl),
+        buffer: createBufferFns(gl),
+        elementBuffer: createElementBufferFns(gl),
+        VAO: createVAOFns(gl),
         draw: (count, mode = GL_TRIANGLES, offset = 0) => gl.drawArrays(mode, offset, count),
         drawElements: (count, mode = GL_TRIANGLES, offset = 0) => gl.drawElements(mode, count, GL_UNSIGNED_SHORT, offset),
 
-        createMesh(data, indices): { vao: VAOState, draw: () => void } {
-            const vao = thisObj.createVAO();
-            const count = indices.length;
-            vao.bind();
-            thisObj.createBuffer().bind().setData(data);
-            thisObj.createElementBuffer().bind().setIndices(indices);
-            return { vao, draw: () => thisObj.drawElements(count) };
+        createMesh([data, indices], attribs): { vao: VAOState, draw: () => void } {
+            const vao = thisObj.VAO().bind();
+            thisObj.buffer().bind().setData(data);
+            thisObj.elementBuffer().bind().setIndices(indices);
+            attribs.map(attr => vao.setPtr(...attr));
+            return { vao, draw: () => thisObj.drawElements(indices.length) };
         },
         resize() {
             const ratio = deviceScaleRatio(width, height);

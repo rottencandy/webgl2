@@ -23,6 +23,6 @@ export const FPSCamera = (speed = .01) => {
             }
         },
         mat: () => cam.recalculate().matrix,
-        eye: () => cam.eye,
+        eye: cam.eye,
     };
 };
