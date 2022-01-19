@@ -1,4 +1,4 @@
-import { F32, HYPOT, SQRT } from '../globals';
+import { F32, HYPOT, SQRT, SIN, COS } from '../globals';
 
 // source: https://github.com/toji/gl-matrix
 
@@ -41,6 +41,13 @@ export const V3multiply = (out: Vector, a: Vector, b: Vector) => {
     return out;
 }
 
+export const V3multiplySc = (out: Vector, a: Vector, x: number) => {
+    out[0] = a[0] * x;
+    out[1] = a[1] * x;
+    out[2] = a[2] * x;
+    return out;
+}
+
 export const V3divide = (out: Vector, a: Vector, b: Vector) => {
     out[0] = a[0] / b[0];
     out[1] = a[1] / b[1];
@@ -60,8 +67,8 @@ export const V3dot = (a: Vector, b: Vector) =>
 
 export const V3cross = (out: Vector, a: Vector, b: Vector) => {
     out[0] = a[1] * b[2] - a[2] * b[1];
-    out[0] = a[2] * b[0] - a[0] * b[2];
-    out[0] = a[0] * b[1] - a[1] * b[0];
+    out[1] = a[2] * b[0] - a[0] * b[2];
+    out[2] = a[0] * b[1] - a[1] * b[0];
     return out;
 };
 
