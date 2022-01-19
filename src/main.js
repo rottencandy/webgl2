@@ -1,3 +1,4 @@
-import render from './examples/lightning';
+import { startLoop } from './engine/loop';
+import { update, render } from './examples/lightning';
 
-render();
+startLoop(update, render);
