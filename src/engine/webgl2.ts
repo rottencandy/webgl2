@@ -134,12 +134,22 @@ const createElementBufferFns = (gl: WebGL2RenderingContext) => (mode = GL_STATIC
     const thisObj: EBState = {
         buf,
         bind() { gl.bindBuffer(GL_ELEMENT_ARRAY_BUFFER, buf); return thisObj; },
-        setIndices(data) { gl.bufferData(GL_ELEMENT_ARRAY_BUFFER, new Uint16Array(data), mode); return thisObj; },
+        setIndices(data) {
+            gl.bufferData(GL_ELEMENT_ARRAY_BUFFER, new Uint16Array(data), mode);
+            return thisObj;
+        },
     };
     return thisObj;
 };
 
-type AttribPointers = [loc: number, size: number, stride?: number, offset?: number, type?: number, normalize?: boolean];
+type AttribPointers = [
+    loc: number,
+    size: number,
+    stride?: number,
+    offset?: number,
+    type?: number,
+    normalize?: boolean
+];
 
 type WebglState = {
     gl: WebGL2RenderingContext;
@@ -151,7 +161,9 @@ type WebglState = {
     draw: (count: number, mode?: number, offset?: number) => void;
     drawElements: (count: number, mode?: number, offset?: number) => void;
     resize: () => void;
-    createMesh: (data: [Float32Array, number[]], attribs: AttribPointers[]) => { vao: VAOState, draw: () => void };
+    createMesh: (data: [Float32Array, number[]], attribs: AttribPointers[]) => {
+        vao: VAOState, draw: () => void
+    };
 };
 
 export const createGLContext = (canvas: HTMLCanvasElement, width = 400, height = 300): WebglState => {
@@ -180,8 +192,10 @@ export const createGLContext = (canvas: HTMLCanvasElement, width = 400, height =
         buffer: createBufferFns(gl),
         elementBuffer: createElementBufferFns(gl),
         VAO: createVAOFns(gl),
-        draw: (count, mode = GL_TRIANGLES, offset = 0) => gl.drawArrays(mode, offset, count),
-        drawElements: (count, mode = GL_TRIANGLES, offset = 0) => gl.drawElements(mode, count, GL_UNSIGNED_SHORT, offset),
+        draw: (count, mode = GL_TRIANGLES, offset = 0) =>
+            gl.drawArrays(mode, offset, count),
+        drawElements: (count, mode = GL_TRIANGLES, offset = 0) =>
+            gl.drawElements(mode, count, GL_UNSIGNED_SHORT, offset),
 
         createMesh([data, indices], attribs): { vao: VAOState, draw: () => void } {
             const vao = thisObj.VAO().bind();

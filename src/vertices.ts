@@ -8,9 +8,9 @@ type VertexData = [Float32Array, number[]];
 export const Plane = (s: number): VertexData => [
     F32([
         0, 0,
-        0, s,
-        s, s,
         s, 0,
+        s, s,
+        0, s,
     ]),
     [0, 1, 2, 0, 2, 3,],
 ];

@@ -3,11 +3,10 @@ precision lowp float;
 ${content}`;
 
 /**
-* Calculates transformed vertices and provides (without normals)
-* interpolated fragment positions.
+* Calculates vertices
 */
 export const vertexPos = makeShader(
-    'in vec4 aPos;' +
+    'layout(location=0)in vec4 aPos;' +
     'uniform mat4 uMat;' +
     'uniform vec4 uPos;' +
 
@@ -33,7 +32,8 @@ export const fragmentStatic = makeShader(
 * normals and interpolated fragment positions.
 */
 export const vertexNormalFrag = makeShader(
-    'in vec4 aPos, aNorm;' +
+    'layout(location=0)in vec4 aPos;' +
+    'layout(location=1)in vec4 aNorm;' +
     'uniform mat4 uMat;' +
     'uniform vec4 uPos;' +
     'out vec3 vNormal, vFragPos;' +
@@ -50,7 +50,7 @@ export const vertexNormalFrag = makeShader(
 * interpolated fragment positions.
 */
 export const vertexFrag = makeShader(
-    'in vec4 aPos;' +
+    'layout(location=0)in vec4 aPos;' +
     'uniform mat4 uMat;' +
     'uniform vec4 uPos;' +
     'out vec3 vFragPos;' +

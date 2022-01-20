@@ -16,8 +16,10 @@ const shader = ctx.shader(
 const { vao, draw } = ctx.createMesh(
     Cube(10),
     [
-        [shader.attribLoc('aPos'), 3, 24],
-        [shader.attribLoc('aNorm'), 3, 24, 12],
+        // aPos
+        [0, 3, 24],
+        // aNorm
+        [1, 3, 24, 12],
     ]
 );
 
@@ -48,7 +50,7 @@ export const render = () => {
 
     shader.uniform('uPos').u4f(0, 0, 0, 0);
     shader.uniform('uMat').m4fv(mat);
-    shader.uniform('uCam').u3f(...cam.eye);
+    shader.uniform('uCam').u3f(cam.eye[0], cam.eye[1], cam.eye[2]);
     shader.uniform('uLightPos').u3f(20, 20, 20);
     shader.uniform('uColor').u3f(.2, .7, .5);
     draw();
