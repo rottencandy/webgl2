@@ -1,6 +1,6 @@
 import { createGLContext } from '../engine/webgl2';
 import { getById } from '../globals';
-import { vertexNormalFrag, fragmentPhong } from './shaders';
+import { vertexNormalFrag, fragmentPhong, vertexPos, fragmentStatic } from './shaders';
 import { Cube } from '../vertices';
 import { FPSCamera } from './cameras';
 
@@ -21,23 +21,43 @@ const { vao, draw } = ctx.createMesh(
     ]
 );
 
-const cam = FPSCamera();
+const lightSh = ctx.shader(
+    vertexPos,
+    fragmentStatic
+).use();
 
-const uMat = shader.uniform('uMat');
-const uCam = shader.uniform('uCam');
-const uLightPos = shader.uniform('uLightPos');
-const uColor = shader.uniform('uColor');
+const { vao: lightVao, draw: drawLight } = ctx.createMesh(
+    Cube(3),
+    [
+        [shader.attribLoc('aPos'), 3, 24],
+    ]
+);
+
+const cam = FPSCamera();
 
 export const update = (dt: number) => {
     cam.update(dt);
 };
 
 export const render = () => {
-    vao.bind();
-    uMat.m4fv(cam.mat());
-    uCam.u3f(...cam.eye);
-    uLightPos.u3f(50., 30., 20.);
-    uColor.u3f(.2, .7, .5);
     ctx.clear();
+    const mat = cam.mat();
+
+    vao.bind();
+    shader.use();
+
+    shader.uniform('uPos').u4f(0, 0, 0, 0);
+    shader.uniform('uMat').m4fv(mat);
+    shader.uniform('uCam').u3f(...cam.eye);
+    shader.uniform('uLightPos').u3f(20, 20, 20);
+    shader.uniform('uColor').u3f(.2, .7, .5);
     draw();
+
+    lightVao.bind();
+    lightSh.use();
+
+    lightSh.uniform('uMat').m4fv(mat);
+    lightSh.uniform('uColor').u3f(1, 1, 1);
+    lightSh.uniform('uPos').u4f(20, 20, 20, 0);
+    drawLight();
 };

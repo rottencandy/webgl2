@@ -84,9 +84,11 @@ const Camera = (fov: number, zNear: number, zFar: number, aspect: number): CamSt
                 pitch = MAX_PITCH;
             if (pitch < -MAX_PITCH)
                 pitch = -MAX_PITCH;
-            t_dir[0] = COS(yaw) * COS(pitch);
+
+            const cosPitch = COS(pitch);
+            t_dir[0] = COS(yaw) * cosPitch;
             t_dir[1] = SIN(pitch);
-            t_dir[2] = SIN(yaw) * COS(pitch);
+            t_dir[2] = SIN(yaw) * cosPitch;
             V3normalize(front, t_dir);
             return thisObj;
         },
