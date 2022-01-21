@@ -15,6 +15,13 @@ export const Plane = (s: number): VertexData => [
     [0, 1, 2, 0, 2, 3,],
 ];
 
+export const planeTexCoords = F32([
+        0, 0,
+        1, 0,
+        1, 1,
+        0, 1,
+]);
+
 // }}}
 
 // cube {{{
@@ -87,6 +94,39 @@ export const Cube = (s: number): VertexData => [
         20, 21, 22, 20, 22, 23,
     ],
 ];
+
+export const cubeTexCoords = F32([
+        // front face
+        0, 1,
+        0, 0,
+        1, 0,
+        1, 1,
+        // right face
+        1, 1,
+        0, 1,
+        0, 0,
+        1, 0,
+        // left face
+        1, 0,
+        0, 0,
+        0, 1,
+        1, 1,
+        // back face
+        1, 1,
+        1, 0,
+        0, 0,
+        0, 1,
+        // bottom face
+        0, 1,
+        0, 0,
+        1, 0,
+        1, 1,
+        // top face
+        0, 0,
+        0, 1,
+        1, 1,
+        1, 0,
+]);
 
 // }}}
 

@@ -1,6 +1,7 @@
 import {
     GL_ARRAY_BUFFER,
     GL_BLEND,
+    GL_CLAMP_TO_EDGE,
     GL_COLOR_BUFFER_BIT,
     GL_CULL_FACE,
     GL_DEPTH_BUFFER_BIT,
@@ -10,10 +11,21 @@ import {
     GL_FRAGMENT_SHADER,
     GL_LEQUAL,
     GL_LINK_STATUS,
+    GL_NEAREST,
     GL_ONE_MINUS_SRC_ALPHA,
+    GL_R8,
+    GL_RED,
+    GL_RGBA,
     GL_SRC_ALPHA,
     GL_STATIC_DRAW,
+    GL_TEXTURE_2D,
+    GL_TEXTURE_MAG_FILTER,
+    GL_TEXTURE_MIN_FILTER,
+    GL_TEXTURE_WRAP_S,
+    GL_TEXTURE_WRAP_T,
     GL_TRIANGLES,
+    GL_UNPACK_ALIGNMENT,
+    GL_UNSIGNED_BYTE,
     GL_UNSIGNED_SHORT,
     GL_VERTEX_SHADER,
 } from './gl-constants';
@@ -123,6 +135,55 @@ const createBufferFns = (gl: WebGL2RenderingContext) => (target = GL_ARRAY_BUFFE
     return thisObj;
 };
 
+type TextureState = {
+    tex: WebGLTexture;
+    bind: () => TextureState;
+    setImage: (imgSrc: string) => TextureState;
+    setFilter: (type?: number) => TextureState;
+    setWrap: (type?: number) => TextureState;
+    setTexData: (data: ArrayBufferView, level?: number, internalFormat?: number, width?: number, height?: number, border?: number, format?: number, type?: number) => TextureState;
+};
+
+
+const createTextureFns = (gl: WebGL2RenderingContext) => (target = GL_TEXTURE_2D) => {
+    const tex = gl.createTexture();
+    const setParam = (key: number, val: number) => gl.texParameteri(target, key, val);
+    const thisObj: TextureState = {
+        tex,
+        bind() { gl.bindTexture(target, tex); return thisObj; },
+        setFilter(type = GL_NEAREST) {
+            setParam(GL_TEXTURE_MIN_FILTER, type);
+            setParam(GL_TEXTURE_MAG_FILTER, type);
+            return thisObj;
+        },
+        setWrap(type = GL_CLAMP_TO_EDGE) {
+            setParam(GL_TEXTURE_WRAP_S, type);
+            setParam(GL_TEXTURE_WRAP_T, type);
+            return thisObj;
+        },
+        // TODO: Turn this into async
+        setImage(imgSrc) {
+            const img = new Image;
+            img.src = imgSrc;
+            img.onload = () => {
+                thisObj.bind();
+                gl.texImage2D(target, 0, GL_RGBA, GL_RGBA, GL_UNSIGNED_BYTE, img);
+                gl.generateMipmap(target);
+            };
+            return thisObj;
+        },
+        setTexData(data: ArrayBufferView, level = 0, internalFormat = GL_R8, width = 2, height = 2, border = 0, format = GL_RED, type = GL_UNSIGNED_BYTE) {
+            thisObj.bind();
+            gl.pixelStorei(GL_UNPACK_ALIGNMENT, 1);
+            gl.texImage2D(target, level, internalFormat, width, height, border, format, type, data);
+            return thisObj;
+        },
+    };
+    // set a temporary blue texture
+    thisObj.setTexData(new Uint8Array([0, 0, 255, 255]), 0, GL_RGBA, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE);
+    return thisObj;
+};
+
 type EBState = {
     buf: WebGLBuffer;
     bind: () => EBState;
@@ -156,6 +217,7 @@ type WebglState = {
     clear: () => void;
     shader: (vs: string, fs: string) => ShaderState;
     buffer: (target?: number, mode?: number) => BufferState;
+    texture: (target?: number) => TextureState;
     elementBuffer: (mode?: number) => EBState;
     VAO: () => VAOState;
     draw: (count: number, mode?: number, offset?: number) => void;
@@ -190,6 +252,7 @@ export const createGLContext = (canvas: HTMLCanvasElement, width = 400, height =
         clear: clearFn(gl),
         shader: createShaderFns(gl),
         buffer: createBufferFns(gl),
+        texture: createTextureFns(gl),
         elementBuffer: createElementBufferFns(gl),
         VAO: createVAOFns(gl),
         draw: (count, mode = GL_TRIANGLES, offset = 0) =>

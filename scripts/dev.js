@@ -18,6 +18,7 @@ esbuild.serve({
     //    },
     //},
     plugins: [glslxPlugin({ prettyPrint: true, renaming: 'none' })],
+    loader: { '.png': 'dataurl' }
 })
     .then(server => console.log(`Serving at: http://localhost:${server.port}`))
     .catch(() => process.exit(1));

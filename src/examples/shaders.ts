@@ -28,6 +28,51 @@ export const fragmentStatic = makeShader(
 );
 
 /**
+* Calculates transformed vertices and provides (without normals)
+* interpolated fragment positions.
+*/
+export const vertexFrag = makeShader(
+    'layout(location=0)in vec4 aPos;' +
+    'uniform mat4 uMat;' +
+    'uniform vec4 uPos;' +
+    'out vec3 vFragPos;' +
+
+    'void main() {' +
+        // TODO: pos should be calculated by world/view matrix
+        'gl_Position = uMat * (uPos + aPos);' +
+        'vFragPos = aPos.xyz;' +
+    '}'
+);
+
+/**
+* Texture vertex
+*/
+export const vertexTex = makeShader(
+    'layout(location=0)in vec4 aPos;' +
+    'layout(location=1)in vec2 aTex;' +
+    'uniform mat4 uMat;' +
+    'out vec2 vTex;' +
+
+    'void main() {' +
+        'gl_Position = uMat * aPos;' +
+        'vTex = aTex;' +
+    '}'
+);
+
+/**
+* Texture fragment
+*/
+export const fragmentTex = makeShader(
+    'in vec2 vTex;' +
+    'uniform sampler2D uTex;' +
+    'out vec4 outColor;' +
+
+    'void main() {' +
+        'outColor = texture(uTex, vTex);' +
+    '}'
+);
+
+/**
 * Calculates transformed vertices and provides
 * normals and interpolated fragment positions.
 */
@@ -42,23 +87,6 @@ export const vertexNormalFrag = makeShader(
         'gl_Position = uMat * (uPos + aPos);' +
         'vFragPos = aPos.xyz;' +
         'vNormal = aNorm.xyz;' +
-    '}'
-);
-
-/**
-* Calculates transformed vertices and provides (without normals)
-* interpolated fragment positions.
-*/
-export const vertexFrag = makeShader(
-    'layout(location=0)in vec4 aPos;' +
-    'uniform mat4 uMat;' +
-    'uniform vec4 uPos;' +
-    'out vec3 vFragPos;' +
-
-    'void main() {' +
-        // TODO: pos should be calculated by world/view matrix
-        'gl_Position = uMat * (uPos + aPos);' +
-        'vFragPos = aPos.xyz;' +
     '}'
 );
 
