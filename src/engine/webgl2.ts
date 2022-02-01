@@ -49,13 +49,13 @@ const uniformSetterFns = (gl: WebGL2RenderingContext, prg: WebGLProgram) => (nam
 
     return {
         loc,
-        u1f: (x: number) => gl.uniform1f(loc, x),
-        u2f: (x: number, y: number) => gl.uniform2f(loc, x, y),
-        u3f: (x: number, y: number, z: number) => gl.uniform3f(loc, x, y, z),
-        u4f: (x: number, y: number, z: number, w: number) => gl.uniform4f(loc, x, y, z, w),
-        m3fv: (data: Float32List, transpose = false) => gl.uniformMatrix3fv(loc, transpose, data),
-        m4fv: (data: Iterable<number>, transpose = false) => gl.uniformMatrix4fv(loc, transpose, data),
-        u1i: (x: number) => gl.uniform1i(loc, x),
+        u1f_: (x: number) => gl.uniform1f(loc, x),
+        u2f_: (x: number, y: number) => gl.uniform2f(loc, x, y),
+        u3f_: (x: number, y: number, z: number) => gl.uniform3f(loc, x, y, z),
+        u4f_: (x: number, y: number, z: number, w: number) => gl.uniform4f(loc, x, y, z, w),
+        m3fv_: (data: Float32List, transpose = false) => gl.uniformMatrix3fv(loc, transpose, data),
+        m4fv_: (data: Iterable<number>, transpose = false) => gl.uniformMatrix4fv(loc, transpose, data),
+        u1i_: (x: number) => gl.uniform1i(loc, x),
     };
 };
 

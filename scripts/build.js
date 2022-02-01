@@ -8,6 +8,7 @@ require('esbuild').build({
     target: 'es6',
     format: 'iife',
     outdir: 'app',
+    mangleProps: /_$/,
     plugins: [glslxPlugin({ prettyPrint: false, renaming: 'all' })],
     loader: { '.png': 'dataurl' }
 }).catch(() => process.exit(1))

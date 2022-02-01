@@ -48,18 +48,18 @@ export const render = () => {
     vao.bind();
     shader.use();
 
-    shader.uniform('uPos').u4f(0, 0, 0, 0);
-    shader.uniform('uMat').m4fv(mat);
-    shader.uniform('uCam').u3f(cam.eye[0], cam.eye[1], cam.eye[2]);
-    shader.uniform('uLightPos').u3f(20, 20, 20);
-    shader.uniform('uColor').u3f(.2, .7, .5);
+    shader.uniform('uPos').u4f_(0, 0, 0, 0);
+    shader.uniform('uMat').m4fv_(mat);
+    shader.uniform('uCam').u3f_(cam.eye[0], cam.eye[1], cam.eye[2]);
+    shader.uniform('uLightPos').u3f_(20, 20, 20);
+    shader.uniform('uColor').u3f_(.2, .7, .5);
     draw();
 
     lightVao.bind();
     lightSh.use();
 
-    lightSh.uniform('uMat').m4fv(mat);
-    lightSh.uniform('uColor').u3f(1, 1, 1);
-    lightSh.uniform('uPos').u4f(20, 20, 20, 0);
+    lightSh.uniform('uMat').m4fv_(mat);
+    lightSh.uniform('uColor').u3f_(1, 1, 1);
+    lightSh.uniform('uPos').u4f_(20, 20, 20, 0);
     drawLight();
 };
