@@ -8,42 +8,42 @@ import img from './f-texture.png';
 
 
 const ctx = createGLContext(getById('c'));
-ctx.resize();
-onresize = ctx.resize;
+ctx.resize_();
+onresize = ctx.resize_;
 
-const shader = ctx.shader(
+const shader = ctx.shader_(
     vertexTex,
     fragmentTex,
-).use();
+).use_();
 
-const { vao, draw } = ctx.createMesh(
+const { vao_, draw_ } = ctx.createMesh_(
     Cube(10),
     // aPos
     [[0, 3, 24]]
 );
 
 // aTex
-ctx.buffer().bind().setData(cubeTexCoords);
-vao.setPtr(1, 2);
-ctx.texture();
-ctx.texture().setImage(img);
+ctx.buffer_().bind_().setData_(cubeTexCoords);
+vao_.setPtr_(1, 2);
+ctx.texture_();
+ctx.texture_().setImage_(img);
 // ctx.texture().bind()
 //     .setTexData(new Uint8Array([128, 64, 128, 0, 192, 0])).setFilter().setWrap();
 
 const cam = FPSCamera();
 
 export const update = (dt: number) => {
-    cam.update(dt);
+    cam.update_(dt);
 };
 
 export const render = () => {
-    ctx.clear();
-    const mat = cam.mat();
+    ctx.clear_();
+    const mat = cam.mat_();
 
-    vao.bind();
-    shader.use();
+    vao_.bind_();
+    shader.use_();
 
-    shader.uniform`uPos`.u4f_(0, 0, 0, 0);
-    shader.uniform`uMat`.m4fv_(mat);
-    draw();
+    shader.uniform_`uPos`.u4f_(0, 0, 0, 0);
+    shader.uniform_`uMat`.m4fv_(mat);
+    draw_();
 };

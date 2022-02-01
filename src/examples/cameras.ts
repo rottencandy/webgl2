@@ -4,25 +4,24 @@ import { radians } from '../globals';
 
 export const FPSCamera = (speed = .01) => {
     const cam = Camera(radians(45), 1, 500, 400 / 300)
-        .moveTo(0, 0, 20);
+        .moveTo_(0, 0, 20);
 
     return {
-        update: (dt: number) => {
+        update_: (dt: number) => {
             const spd = speed * dt;
-            const fd = Keys.up ? spd : 0;
-            const bk = Keys.down ? -spd : 0;
-            const lt = Keys.left ? spd : 0;
-            const rt = Keys.right ? -spd : 0;
-            cam.move(lt + rt, 0, fd + bk);
+            const fd = Keys.up_ && spd;
+            const bk = Keys.down_ && -spd;
+            const lt = Keys.left_ && spd;
+            const rt = Keys.right_ && -spd;
+            cam.move_(lt + rt, 0, fd + bk);
 
-            if (Keys.pointerLocked) {
-                cam.rotate(Keys.ptrY / 1000, Keys.ptrX / 1000);
+            if (Keys.pointerLocked_) {
+                cam.rotate_(Keys.ptrY_ / 1e3, Keys.ptrX_ / 1e3);
                 // TODO: do this at the end of the update step
-                Keys.ptrX = 0;
-                Keys.ptrY = 0;
+                Keys.ptrX_ = Keys.ptrY_ = 0;
             }
         },
-        mat: () => cam.recalculate().matrix,
-        eye: cam.eye,
+        mat_: () => cam.recalculate_().matrix_,
+        eye_: cam.eye_,
     };
 };

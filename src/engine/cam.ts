@@ -13,31 +13,31 @@ type CamState = {
     /**
      * Move camera along XYZ
      */
-    move: (x: number, y: number, z: number) => CamState;
+    move_: (x: number, y: number, z: number) => CamState;
     /**
      * Rotate camera (radians)
      */
-    rotate: (pitch: number, yaw: number) => CamState;
+    rotate_: (pitch: number, yaw: number) => CamState;
     /**
      * Move camera to absolute point XYZ
      */
-    moveTo: (x: number, y: number, z: number) => CamState;
+    moveTo_: (x: number, y: number, z: number) => CamState;
     /**
      * Change target focus point
      * @deprecated not yet implemented
      */
-    lookAt: (x: number, y: number, z: number) => CamState;
+    lookAt_: (x: number, y: number, z: number) => CamState;
     /**
      * recalculate transform matrix
      */
-    recalculate: () => CamState;
+    recalculate_: () => CamState;
     /**
      * view-projection matrix
      */
-    eye: Vector;
-    matrix: Matrix;
-    viewMatrix: Matrix;
-    projectionMatrix: Matrix;
+    eye_: Vector;
+    matrix_: Matrix;
+    viewMatrix_: Matrix;
+    projectionMatrix_: Matrix;
 };
 
 const MAX_PITCH = PI / 2 - 0.01;
@@ -48,8 +48,8 @@ const Camera = (fov: number, zNear: number, zFar: number, aspect: number): CamSt
     const projectionMat = M4perspective(M4create(), fov, aspect, zNear, zFar);
     const viewMat = M4create();
 
-    const pos = V3create(0, 0, 0);
-    const up = V3create(0, 1, 0);
+    const pos = V3create();
+    const up = V3create(0, 1);
     const front = V3create(0, 0, -1);
     // make cam initially point to z=-1
     let yaw = -PI / 2,
@@ -63,7 +63,7 @@ const Camera = (fov: number, zNear: number, zFar: number, aspect: number): CamSt
     const t_target = V3create();
 
     const thisObj: CamState = {
-        move(x, _y, z) {
+        move_(x, _y, z) {
             // TODO: handle y movement
             if (z) {
                 V3multiplySc(t_move, front, z);
@@ -77,7 +77,7 @@ const Camera = (fov: number, zNear: number, zFar: number, aspect: number): CamSt
             }
             return thisObj;
         },
-        rotate(ptch, yw) {
+        rotate_(ptch, yw) {
             pitch -= ptch;
             yaw += yw;
             if (pitch > MAX_PITCH)
@@ -92,23 +92,24 @@ const Camera = (fov: number, zNear: number, zFar: number, aspect: number): CamSt
             V3normalize(front, t_dir);
             return thisObj;
         },
-        moveTo(x, y, z) {
+        moveTo_(x, y, z) {
             V3set(pos, x, y, z);
             return thisObj;
         },
-        lookAt(_x, _y, _z) {
+        // TODO
+        lookAt_(_x, _y, _z) {
             //V3set(target, x, y, z);
             return thisObj;
         },
-        recalculate() {
+        recalculate_() {
             M4lookAt(t_view, pos, V3add(t_target, pos, front), up);
-            M4multiply(thisObj.matrix, projectionMat, t_view);
+            M4multiply(thisObj.matrix_, projectionMat, t_view);
             return thisObj;
         },
-        matrix: M4clone(projectionMat),
-        viewMatrix: viewMat,
-        projectionMatrix: projectionMat,
-        eye: pos,
+        matrix_: M4clone(projectionMat),
+        viewMatrix_: viewMat,
+        projectionMatrix_: projectionMat,
+        eye_: pos,
     };
 
     return thisObj;

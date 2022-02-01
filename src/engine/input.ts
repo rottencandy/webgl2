@@ -1,39 +1,39 @@
 import { deviceScaleRatio } from '../globals';
 
 type WatchedKeys = {
-    left: boolean,
-    right: boolean,
-    up: boolean,
-    down: boolean,
-    space: boolean,
-    esc: boolean,
-    clicked: boolean,
-    pointerLocked: boolean,
-    touchX: number,
-    touchY: number,
-    ptrX: number,
-    ptrY: number,
+    left_: boolean,
+    right_: boolean,
+    up_: boolean,
+    down_: boolean,
+    space_: boolean,
+    esc_: boolean,
+    clicked_: boolean,
+    pointerLocked_: boolean,
+    touchX_: number,
+    touchY_: number,
+    ptrX_: number,
+    ptrY_: number,
 };
 
 export const Keys: WatchedKeys = {
-    left: !!0,
-    right: !!0,
-    up: !!0,
-    down: !!0,
+    left_: !!0,
+    right_: !!0,
+    up_: !!0,
+    down_: !!0,
 
-    space: !!0,
-    esc: !!0,
+    space_: !!0,
+    esc_: !!0,
 
-    clicked: !!0,
-    touchX: 0,
-    touchY: 0,
+    clicked_: !!0,
+    touchX_: 0,
+    touchY_: 0,
 
-    pointerLocked: !!0,
-    ptrX: 0,
-    ptrY: 0,
+    pointerLocked_: !!0,
+    ptrX_: 0,
+    ptrY_: 0,
 };
 
-export const dirKeysPressed = (): boolean => !!(Keys.left || Keys.right || Keys.up || Keys.down);
+export const dirKeysPressed = (): boolean => !!(Keys.left_ || Keys.right_ || Keys.up_ || Keys.down_);
 
 const ARROW = 'Arrow';
 
@@ -41,69 +41,70 @@ const ARROW = 'Arrow';
  * Initialize onkey listeners
 */
 export const setupKeyListener = (canvas: HTMLCanvasElement, width: number, height: number, lockPointer?: boolean) => {
+    // TODO: use keycode here?
     const setKeyState = (value: boolean) => ({ key: code }) => {
         switch (code) {
             case ARROW + 'Up':
             case 'w':
             case 'z':
-                Keys.up = value;
+                Keys.up_ = value;
                 break;
             case ARROW + 'Down':
             case 's':
-                Keys.down = value;
+                Keys.down_ = value;
                 break;
             case ARROW + 'Left':
             case 'a':
             case 'q':
-                Keys.left = value;
+                Keys.left_ = value;
                 break;
             case ARROW + 'Right':
             case 'd':
-                Keys.right = value;
+                Keys.right_ = value;
                 break;
             case 'Escape':
-                Keys.esc = value;
+                Keys.esc_ = value;
                 break;
             case ' ':
-                Keys.space = value;
+                Keys.space_ = value;
         }
     }
 
     onkeydown = setKeyState(!!1);
     onkeyup = setKeyState(!!0);
 
-    canvas.onpointerdown = () => Keys.clicked = !!1;
-    canvas.onpointerup = () => Keys.clicked = !!0;
+    canvas.onpointerdown = () => Keys.clicked_ = !!1;
+    canvas.onpointerup = () => Keys.clicked_ = !!0;
     canvas.onpointermove = e => {
         const ratio = deviceScaleRatio(width, height);
-        Keys.touchX = e.offsetX / ratio;
-        Keys.touchY = e.offsetY / ratio;
+        Keys.touchX_ = e.offsetX / ratio;
+        Keys.touchY_ = e.offsetY / ratio;
     };
 
     canvas.ontouchstart = canvas.ontouchmove = canvas.ontouchend = canvas.ontouchcancel = e => {
         e.preventDefault();
-        Keys.clicked = e.touches.length > 0;
-        if (Keys.clicked) {
+        Keys.clicked_ = e.touches.length > 0;
+        if (Keys.clicked_) {
             const offset = canvas.getBoundingClientRect();
             const ratio = deviceScaleRatio(width, height);
-            Keys.touchX = (e.touches[0].clientX - offset.left) / ratio;
+            Keys.touchX_ = (e.touches[0].clientX - offset.left) / ratio;
             // offset.top is not needed since canvas is always stuck to top
-            Keys.touchY = e.touches[0].clientY / ratio;
+            Keys.touchY_ = e.touches[0].clientY / ratio;
         }
     };
 
     if (lockPointer) {
         canvas.onclick = () => {
-            if (!Keys.pointerLocked) {
+            if (!Keys.pointerLocked_) {
                 canvas.requestPointerLock();
             }
         };
     }
     document.addEventListener('pointerlockchange', () => {
-        Keys.pointerLocked = document.pointerLockElement === canvas;
+        Keys.pointerLocked_ = document.pointerLockElement === canvas;
     });
-    document.addEventListener('mousemove', (e) => {
-        Keys.ptrX = e.movementX;
-        Keys.ptrY = e.movementY;
-    });
+    document.onmousemove = (e) => {
+        Keys.ptrX_ = e.movementX;
+        Keys.ptrY_ = e.movementY;
+    };
 };
