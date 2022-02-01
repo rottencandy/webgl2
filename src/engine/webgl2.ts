@@ -44,8 +44,8 @@ const createShader = (gl: WebGL2RenderingContext, type: number, source: string) 
     return shader;
 };
 
-const uniformSetterFns = (gl: WebGL2RenderingContext, prg: WebGLProgram) => (name: string) => {
-    const loc = gl.getUniformLocation(prg, name);
+const uniformSetterFns = (gl: WebGL2RenderingContext, prg: WebGLProgram) => (name: TemplateStringsArray) => {
+    const loc = gl.getUniformLocation(prg, name as unknown as string);
 
     return {
         loc,
@@ -64,7 +64,8 @@ type ShaderState = {
     use: () => ShaderState;
     // TODO:
     uniform: ReturnType<typeof uniformSetterFns>;
-    attribLoc: (name: string) => number;
+    /** @deprecated try to use `layout(location=n)` in shader */
+    attribLoc: (name: TemplateStringsArray) => number;
 };
 
 const createShaderProgram = (gl: WebGL2RenderingContext, vShader: WebGLShader, fShader: WebGLShader): ShaderState => {
@@ -84,7 +85,7 @@ const createShaderProgram = (gl: WebGL2RenderingContext, vShader: WebGLShader, f
         prg,
         uniform: uniformSetterFns(gl, prg),
         use() { gl.useProgram(prg); return thisObj; },
-        attribLoc: (name: string) => gl.getAttribLocation(prg, name),
+        attribLoc: (name) => gl.getAttribLocation(prg, name as unknown as string),
     };
 
     return thisObj;

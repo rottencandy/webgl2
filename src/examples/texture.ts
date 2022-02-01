@@ -43,7 +43,7 @@ export const render = () => {
     vao.bind();
     shader.use();
 
-    shader.uniform('uPos').u4f_(0, 0, 0, 0);
-    shader.uniform('uMat').m4fv_(mat);
+    shader.uniform`uPos`.u4f_(0, 0, 0, 0);
+    shader.uniform`uMat`.m4fv_(mat);
     draw();
 };
