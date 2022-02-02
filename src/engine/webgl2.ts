@@ -10,7 +10,6 @@ import {
     GL_FLOAT,
     GL_FRAGMENT_SHADER,
     GL_LEQUAL,
-    GL_LINK_STATUS,
     GL_NEAREST,
     GL_ONE_MINUS_SRC_ALPHA,
     GL_R8,
@@ -68,18 +67,18 @@ type ShaderState = {
     attribLoc_: (name: TemplateStringsArray) => number;
 };
 
-const createShaderProgram = (gl: WebGL2RenderingContext, vShader: WebGLShader, fShader: WebGLShader): ShaderState => {
+const createShaderFns = (gl: WebGL2RenderingContext) => (vSource: string, fSource: string): ShaderState => {
     const prg = gl.createProgram();
-    gl.attachShader(prg, vShader);
-    gl.attachShader(prg, fShader);
+    gl.attachShader(prg, createShader(gl, GL_VERTEX_SHADER, vSource));
+    gl.attachShader(prg, createShader(gl, GL_FRAGMENT_SHADER, fSource));
     gl.linkProgram(prg);
 
-    if (!gl.getProgramParameter(prg, GL_LINK_STATUS)) {
-        console.error('Program Link failed: ', gl.getProgramInfoLog(prg));
-        console.error('vs log: ', gl.getShaderInfoLog(vShader));
-        console.error('fs log: ', gl.getShaderInfoLog(fShader));
-        throw new Error;
-    }
+    //if (!gl.getProgramParameter(prg, GL_LINK_STATUS)) {
+    //    console.error('Program Link failed: ', gl.getProgramInfoLog(prg));
+    //    console.error('vs log: ', gl.getShaderInfoLog(vShader));
+    //    console.error('fs log: ', gl.getShaderInfoLog(fShader));
+    //    throw new Error;
+    //}
 
     const thisObj: ShaderState = {
         prg_: prg,
@@ -89,12 +88,6 @@ const createShaderProgram = (gl: WebGL2RenderingContext, vShader: WebGLShader, f
     };
 
     return thisObj;
-};
-
-const createShaderFns = (gl: WebGL2RenderingContext) => (vsSource: string, fsSource: string) => {
-    const vShader = createShader(gl, GL_VERTEX_SHADER, vsSource);
-    const fShader = createShader(gl, GL_FRAGMENT_SHADER, fsSource);
-    return createShaderProgram(gl, vShader, fShader);
 };
 
 type VAOState = {
