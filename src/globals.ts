@@ -1,7 +1,9 @@
 const M = Math;
 
+export const DOC = document;
+
 /** Alias for `document.getElementById()` */
-export const getById = (id: string) => document.getElementById(id) as HTMLCanvasElement;
+export const getById = (id: string) => DOC.getElementById(id) as HTMLCanvasElement;
 
 export const
     deviceScaleRatio = (width: number, height: number) => MIN(innerWidth / width, innerHeight / height),
