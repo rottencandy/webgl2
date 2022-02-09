@@ -18,7 +18,6 @@ export const startLoop = (update: StepFn, render: StepFn) => {
         dt += MIN(now - last, 1e3);
         last = now;
 
-        // [GOLFED]
         // don't update with a very large dt
         // (happens if tab lost focus and regained later)
         // if (dt > 1e3)
@@ -28,7 +27,7 @@ export const startLoop = (update: StepFn, render: StepFn) => {
         //     dt -= step;
         //     update(step);
         // };
-        for(dt>1e3&&(dt=0);dt>step;dt-=step,update(step));
+        for(;dt>step;dt-=step,update(step));
 
         render(dt);
 
