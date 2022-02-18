@@ -4,7 +4,7 @@ import { vertexTex, fragmentTex } from './shaders';
 import { Cube, cubeTexCoords } from '../vertices';
 import { FPSCamera } from './cameras';
 
-import img from './f-texture.png';
+import img from './wood.png';
 
 const ctx = createGLContext(getById('c'));
 ctx.resize_();
