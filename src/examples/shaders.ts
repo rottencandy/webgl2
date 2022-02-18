@@ -113,7 +113,7 @@ export const fragmentPhong = makeShader
         `vec3 ambientStr = vec3(.1);` +
         `vec3 diffStr = vec3(1.);` +
         `vec3 spectacularStr = vec3(.5);` +
-        `float shininess = 32.;` +
+        `float shininess = 8.;` +
 
         // ambient
         `vec3 ambient = ambientStr * lightColor;` +
@@ -126,8 +126,13 @@ export const fragmentPhong = makeShader
 
         // spectacular
         `vec3 viewDir = normalize(uCam - vFragPos);` +
+
+        // For blinn-phong
+        //`vec3 halfwayDir = normalize(lightDir + viewDir);` +
+        //`float spec = pow(max(dot(viewDir, halfwayDir), 0.), 16.);` +
         `vec3 reflectDir = reflect(-lightDir, norm);` +
         `float spec = pow(max(dot(viewDir, reflectDir), 0.), shininess);` +
+
         `vec3 spectacular = lightColor * (spec * spectacularStr);` +
 
         `vec3 result = (ambient + diffuse + spectacular) * uColor;` +
