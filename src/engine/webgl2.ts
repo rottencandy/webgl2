@@ -2,6 +2,7 @@ import {
     GL_ARRAY_BUFFER,
     GL_BLEND,
     GL_CLAMP_TO_EDGE,
+    GL_COLOR_ATTACHMENT0,
     GL_COLOR_BUFFER_BIT,
     GL_CULL_FACE,
     GL_DEPTH_BUFFER_BIT,
@@ -9,7 +10,10 @@ import {
     GL_ELEMENT_ARRAY_BUFFER,
     GL_FLOAT,
     GL_FRAGMENT_SHADER,
+    GL_FRAMEBUFFER,
     GL_LEQUAL,
+    GL_LINEAR,
+    GL_LINK_STATUS,
     GL_NEAREST,
     GL_ONE_MINUS_SRC_ALPHA,
     GL_R8,
@@ -63,7 +67,7 @@ type ShaderState = {
     use_: () => ShaderState;
     // TODO:
     uniform_: ReturnType<typeof uniformSetterFns>;
-    /** @deprecated try to use `layout(location=n)` in shader */
+    /** @deprecated only for extreme cases, try to use `layout(location=n)` in shader */
     attribLoc_: (name: TemplateStringsArray) => number;
 };
 
@@ -73,12 +77,12 @@ const createShaderFns = (gl: WebGL2RenderingContext) => (vSource: string, fSourc
     gl.attachShader(prg, createShader(gl, GL_FRAGMENT_SHADER, fSource));
     gl.linkProgram(prg);
 
-    //if (!gl.getProgramParameter(prg, GL_LINK_STATUS)) {
-    //    console.error('Program Link failed: ', gl.getProgramInfoLog(prg));
-    //    console.error('vs log: ', gl.getShaderInfoLog(vShader));
-    //    console.error('fs log: ', gl.getShaderInfoLog(fShader));
-    //    throw new Error;
-    //}
+    if (!gl.getProgramParameter(prg, GL_LINK_STATUS)) {
+        alert('Program Link failed: ' + gl.getProgramInfoLog(prg));
+        //console.error('vs log: ', gl.getShaderInfoLog(vShader));
+        //console.error('fs log: ', gl.getShaderInfoLog(fShader));
+        //throw new Error;
+    }
 
     const thisObj: ShaderState = {
         prg_: prg,
@@ -166,9 +170,9 @@ const createTextureFns = (gl: WebGL2RenderingContext) => (target = GL_TEXTURE_2D
             };
             return thisObj;
         },
-        setTexData_(data: ArrayBufferView, level = 0, internalFormat = GL_R8, width = 2, height = 2, border = 0, format = GL_RED, type = GL_UNSIGNED_BYTE) {
+        setTexData_(data: ArrayBufferView, level = 0, internalFormat = GL_R8, width = 2, height = 2, border = 0, format = GL_RED, type = GL_UNSIGNED_BYTE, alignment = 1) {
             thisObj.bind_();
-            gl.pixelStorei(GL_UNPACK_ALIGNMENT, 1);
+            gl.pixelStorei(GL_UNPACK_ALIGNMENT, alignment);
             gl.texImage2D(target, level, internalFormat, width, height, border, format, type, data);
             return thisObj;
         },
@@ -220,13 +224,13 @@ type WebglState = {
     createMesh_: (data: [Float32Array, number[]], attribs: AttribPointers[]) => {
         vao_: VAOState, draw_: () => void
     };
+    renderTargetContext_: (tex: TextureState) => (fn: () => void) => void;
 };
 
 export const createGLContext = (canvas: HTMLCanvasElement, width = 400, height = 300): WebglState => {
     const gl = canvas.getContext('webgl2');
     if (!gl) {
         alert('Could not get gl context');
-        throw new Error;
     };
 
     canvas.width = width;
@@ -267,6 +271,19 @@ export const createGLContext = (canvas: HTMLCanvasElement, width = 400, height =
             canvas.style.height = height * ratio + 'px';
             // display note if device is in potrait
             getById('d').style.display = innerWidth < innerHeight ? 'block' : 'none';
+        },
+        renderTargetContext_(target) {
+            // TODO: Set depth texture
+            const fb = gl.createFramebuffer();
+            target.setTexData_(null, 0, GL_RGBA, width, height, 0, GL_RGBA).setFilter_(GL_LINEAR).setWrap_();
+            const bindFn = (target: WebGLFramebuffer) => gl.bindFramebuffer(GL_FRAMEBUFFER, target);
+            const withTarget = (ctxFn: () => void) => {
+                bindFn(fb);
+                ctxFn();
+                bindFn(null);
+            };
+            withTarget(() => gl.framebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, target.tex_, 0))
+            return withTarget;
         },
     };
 
