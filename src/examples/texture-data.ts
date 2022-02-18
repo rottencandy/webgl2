@@ -4,8 +4,6 @@ import { vertexTex, fragmentTex } from './shaders';
 import { Cube, cubeTexCoords } from '../vertices';
 import { FPSCamera } from './cameras';
 
-import img from './f-texture.png';
-
 const ctx = createGLContext(getById('c'));
 ctx.resize_();
 onresize = ctx.resize_;
@@ -24,7 +22,8 @@ const { vao_, draw_ } = ctx.createMesh_(
 // aTex
 ctx.buffer_().bind_().setData_(cubeTexCoords);
 vao_.setPtr_(1, 2);
-ctx.texture_().setImage_(img);
+ctx.texture_().bind_()
+    .setTexData_(new Uint8Array([128, 64, 128, 0, 192, 0])).setFilter_().setWrap_();
 
 const cam = FPSCamera();
 
