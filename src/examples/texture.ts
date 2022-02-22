@@ -23,7 +23,7 @@ const { vao_, draw_ } = ctx.createMesh_(
 
 // aTex
 ctx.buffer_().bind_().setData_(cubeTexCoords);
-vao_.setPtr_(1, 2);
+vao_.setPtr_(1, 3);
 ctx.texture_().setImage_(img);
 
 const cam = FPSCamera();
