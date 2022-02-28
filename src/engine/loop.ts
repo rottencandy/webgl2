@@ -2,8 +2,6 @@ import { MIN } from '../globals';
 
 type StepFn = (delta: number) => void;
 
-const RAF = requestAnimationFrame;
-
 /**
  * Start the game loop
  * Inspired by:
@@ -12,7 +10,7 @@ const RAF = requestAnimationFrame;
  */
 export const startLoop = (update: StepFn, render: StepFn) => {
     let last = 0, dt = 0, step = 1 / 60;
-    const loop = (now: number) => {
+    (function loop(now: number) {
         // Sanity check - absorb random lag spike / frame jumps
         // (expected delta for 60FPS is 1000/60 = ~16.67ms)
         dt += MIN(now - last, 1e3);
@@ -31,7 +29,6 @@ export const startLoop = (update: StepFn, render: StepFn) => {
 
         render(dt);
 
-        RAF(loop);
-    };
-    RAF(loop);
+        requestAnimationFrame(loop);
+    })(0);
 };

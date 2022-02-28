@@ -1,4 +1,4 @@
 import { startLoop } from './engine/loop';
-import { update, render } from './examples/texture-render';
+import { update, render } from './examples/shadertoy';
 
 startLoop(update, render);
