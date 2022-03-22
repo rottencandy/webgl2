@@ -5,7 +5,10 @@ import {
     GL_COLOR_ATTACHMENT0,
     GL_COLOR_BUFFER_BIT,
     GL_CULL_FACE,
+    GL_DEPTH_ATTACHMENT,
     GL_DEPTH_BUFFER_BIT,
+    GL_DEPTH_COMPONENT,
+    GL_DEPTH_COMPONENT24,
     GL_DEPTH_TEST,
     GL_ELEMENT_ARRAY_BUFFER,
     GL_FLOAT,
@@ -273,7 +276,6 @@ export const createGLContext = (canvas: HTMLCanvasElement, width = 400, height =
             getById('d').style.display = innerWidth < innerHeight ? 'block' : 'none';
         },
         renderTargetContext_(target) {
-            // TODO: Set depth texture
             const fb = gl.createFramebuffer();
             target.setTexData_(null, 0, GL_RGBA, width, height, 0, GL_RGBA).setFilter_(GL_LINEAR).setWrap_();
             const bindFn = (target: WebGLFramebuffer) => gl.bindFramebuffer(GL_FRAMEBUFFER, target);
@@ -282,7 +284,14 @@ export const createGLContext = (canvas: HTMLCanvasElement, width = 400, height =
                 ctxFn();
                 bindFn(null);
             };
-            withTarget(() => gl.framebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, target.tex_, 0))
+            withTarget(() => {
+                gl.framebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, target.tex_, 0);
+                const depth = thisObj.texture_()
+                    .setTexData_(null, 0, GL_DEPTH_COMPONENT24, width, height, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_INT)
+                    .setFilter_(GL_LINEAR)
+                    .setWrap_();
+                gl.framebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depth.tex_, 0);
+            })
             return withTarget;
         },
     };
