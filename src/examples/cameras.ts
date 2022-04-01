@@ -23,5 +23,6 @@ export const FPSCamera = (speed = .01) => {
         },
         mat_: () => cam.recalculate_().matrix_,
         eye_: cam.eye_,
+        lookDir_: cam.lookDir_,
     };
 };

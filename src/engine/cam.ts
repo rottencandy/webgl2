@@ -7,7 +7,7 @@ import {
     M4perspective,
     M4clone,
 } from '../math/mat4';
-import { Vector, V3create, V3normalize, V3cross, V3add, V3multiplySc, V3set } from '../math/vec3';
+import { Vector, V3create, V3normalize, V3cross, V3add, V3multiplySc, V3set, V3scale } from '../math/vec3';
 
 type CamState = {
     /**
@@ -35,6 +35,7 @@ type CamState = {
      * view-projection matrix
      */
     eye_: Vector;
+    lookDir_: Vector;
     matrix_: Matrix;
     viewMatrix_: Matrix;
     projectionMatrix_: Matrix;
@@ -63,10 +64,16 @@ const Camera = (fov: number, zNear: number, zFar: number, aspect: number): CamSt
     const t_target = V3create();
 
     const thisObj: CamState = {
-        move_(x, _y, z) {
-            // TODO: handle y movement
+        move_(x, y, z) {
             if (z) {
                 V3multiplySc(t_move, front, z);
+                // reset y dir, so we always move paralell to the ground
+                // regardless of face direction
+                t_move[1] = 0;
+                V3add(pos, pos, t_move);
+            }
+            if (y) {
+                V3scale(t_move, up, y);
                 V3add(pos, pos, t_move);
             }
             if (x) {
@@ -110,6 +117,7 @@ const Camera = (fov: number, zNear: number, zFar: number, aspect: number): CamSt
         viewMatrix_: viewMat,
         projectionMatrix_: projectionMat,
         eye_: pos,
+        lookDir_: front,
     };
 
     return thisObj;
