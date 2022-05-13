@@ -19,13 +19,13 @@ type StateObject = {
  * `reset_`: reset state to given key.
  */
 export const createStateMachine = (states: StateObject, initial: string) => {
-    let state = initial;
+    let current = states[initial];
     return {
         run_: (...data: any[]) => {
-            const next = states[state](...data);
-            state = next === undefined ? state : next;
-            return state;
+            const next = current(...data);
+            if (next) current = states[next];
+            return next;
         },
-        reset_: (x: string) => state = x,
+        reset_: (x: string) => current = states[x],
     };
 }
