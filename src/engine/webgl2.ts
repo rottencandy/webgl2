@@ -33,6 +33,7 @@ import {
     GL_TRIANGLES,
     GL_UNPACK_ALIGNMENT,
     GL_UNSIGNED_BYTE,
+    GL_UNSIGNED_INT,
     GL_UNSIGNED_SHORT,
     GL_VERTEX_SHADER,
 } from './gl-constants';
@@ -235,6 +236,7 @@ type WebglState = {
     draw_: (count: number, mode?: number, offset?: number) => void;
     drawElements_: (count: number, mode?: number, offset?: number) => void;
     resize_: () => void;
+    changeSize_: (w: number, h: number) => void;
     createMesh_: (data: [Float32Array, number[]], attribs: AttribPointers[]) => {
         vao_: VAOState, draw_: () => void
     };
@@ -281,10 +283,18 @@ export const createGLContext = (canvas: HTMLCanvasElement, width = 400, height =
         },
         resize_() {
             const ratio = deviceScaleRatio(width, height);
+            canvas.width = width;
+            canvas.height = height;
             canvas.style.width = width * ratio + 'px';
             canvas.style.height = height * ratio + 'px';
+            gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
             // display note if device is in potrait
             getById('d').style.display = innerWidth < innerHeight ? 'block' : 'none';
+        },
+        changeSize_(w, h) {
+            width = w;
+            height = h;
+            thisObj.resize_();
         },
         renderTargetContext_(target) {
             const fb = gl.createFramebuffer();
