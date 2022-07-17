@@ -240,7 +240,7 @@ type WebglState = {
     createMesh_: (data: [Float32Array, number[]], attribs: AttribPointers[]) => {
         vao_: VAOState, draw_: () => void
     };
-    renderTargetContext_: (tex: TextureState) => (fn: () => void) => void;
+    renderTargetContext_: (tex: TextureState, width?: number, height?: number) => (fn: () => void) => void;
 };
 
 export const createGLContext = (canvas: HTMLCanvasElement, width = 400, height = 300): WebglState => {
@@ -296,15 +296,20 @@ export const createGLContext = (canvas: HTMLCanvasElement, width = 400, height =
             height = h;
             thisObj.resize_();
         },
-        renderTargetContext_(target) {
+        renderTargetContext_(target, w = width, h = height) {
             const fb = gl.createFramebuffer();
             target.setTexData_(null, 0, GL_RGBA, width, height, 0, GL_RGBA).setFilter_(GL_LINEAR).setWrap_();
             const bindFn = (target: WebGLFramebuffer) => gl.bindFramebuffer(GL_FRAMEBUFFER, target);
+            const setViewport = (w: number, h: number) => gl.viewport(0, 0, w, h);
             const withTarget = (ctxFn: () => void) => {
                 bindFn(fb);
+                setViewport(w, h);
                 ctxFn();
+
+                setViewport(width, height);
                 bindFn(null);
             };
+            // setup depth texture
             withTarget(() => {
                 gl.framebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, target.tex_, 0);
                 const depth = thisObj.texture_()
