@@ -2,9 +2,9 @@ import Camera from '../engine/cam';
 import { Keys } from '../engine/input';
 import { radians } from '../globals';
 
-export const FPSCamera = (speed = .01) => {
+export const FPSCamera = (speed = .01, x = 0, y = 0, z = 20) => {
     const cam = Camera(radians(45), 1, 500, 400 / 300)
-        .moveTo_(0, 0, 20);
+        .moveTo_(x, y, z);
 
     return {
         update_: (dt: number) => {
