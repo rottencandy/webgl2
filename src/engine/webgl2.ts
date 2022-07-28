@@ -158,6 +158,7 @@ const createTextureFns = (gl: WebGL2RenderingContext) => (target = GL_TEXTURE_2D
     const thisObj: TextureState = {
         tex_: tex,
         bind_() { gl.bindTexture(target, tex); return thisObj; },
+        // TODO find out if filter is mandatory (use gl_nearest always)
         setFilter_(type = GL_NEAREST) {
             setParam(GL_TEXTURE_MIN_FILTER, type);
             setParam(GL_TEXTURE_MAG_FILTER, type);
@@ -240,7 +241,7 @@ type WebglState = {
     createMesh_: (data: [Float32Array, number[]], attribs: AttribPointers[]) => {
         vao_: VAOState, draw_: () => void
     };
-    renderTargetContext_: (tex: TextureState, width?: number, height?: number) => (fn: () => void) => void;
+    renderTargetContext_: (tex: TextureState, width?: number, height?: number, internalFormat?: number, format?: number) => (fn: () => void) => void;
 };
 
 export const createGLContext = (canvas: HTMLCanvasElement, width = 400, height = 300): WebglState => {
@@ -296,9 +297,9 @@ export const createGLContext = (canvas: HTMLCanvasElement, width = 400, height =
             height = h;
             thisObj.resize_();
         },
-        renderTargetContext_(target, w = width, h = height) {
+        renderTargetContext_(target, w = width, h = height, internalFormat = GL_RGBA, format = GL_RGBA) {
             const fb = gl.createFramebuffer();
-            target.setTexData_(null, 0, GL_RGBA, width, height, 0, GL_RGBA).setFilter_(GL_LINEAR).setWrap_();
+            target.setTexData_(null, 0, internalFormat, w, h, 0, format).setFilter_();
             const bindFn = (target: WebGLFramebuffer) => gl.bindFramebuffer(GL_FRAMEBUFFER, target);
             const setViewport = (w: number, h: number) => gl.viewport(0, 0, w, h);
             const withTarget = (ctxFn: () => void) => {
@@ -313,7 +314,7 @@ export const createGLContext = (canvas: HTMLCanvasElement, width = 400, height =
             withTarget(() => {
                 gl.framebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, target.tex_, 0);
                 const depth = thisObj.texture_()
-                    .setTexData_(null, 0, GL_DEPTH_COMPONENT24, width, height, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_INT)
+                    .setTexData_(null, 0, GL_DEPTH_COMPONENT24, w, h, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_INT)
                     .setFilter_(GL_LINEAR)
                     .setWrap_();
                 gl.framebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depth.tex_, 0);
