@@ -16,7 +16,8 @@
   },
   "devDependencies": {
     "@rottencandy/esbuild-plugin-glslx": "^0.0.3",
-    "esbuild": "^0.14.49",
-    "uglify-js": "^3.16.2"
+    "esbuild": "^0.14.53",
+    "spglsl": "^0.2.6",
+    "uglify-js": "^3.16.3"
   }
 }
