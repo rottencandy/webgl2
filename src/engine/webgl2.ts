@@ -102,6 +102,7 @@ const createShaderFns = (gl: WebGL2RenderingContext) => (vSource: string, fSourc
 type VAOState = {
     vao_: WebGLVertexArrayObject;
     bind_: () => VAOState;
+    // binds VAO automatically
     setPtr_: (loc: number, size: number, stride?: number, offset?: number, type?: number, normalize?: boolean) => VAOState;
 };
 
@@ -114,6 +115,7 @@ const createVAOFns = (gl: WebGL2RenderingContext) => (): VAOState => {
             return thisObj;
         },
         setPtr_(loc, size, stride = 0, offset = 0, type = GL_FLOAT, normalize = false) {
+            this.bind_();
             gl.enableVertexAttribArray(loc);
             gl.vertexAttribPointer(loc, size, type, normalize, stride, offset);
             return thisObj;
@@ -125,6 +127,7 @@ const createVAOFns = (gl: WebGL2RenderingContext) => (): VAOState => {
 type BufferState = {
     buf_: WebGLBuffer;
     bind_: () => BufferState;
+    // binds buffer automatically
     setData_: (data: BufferSource) => BufferState;
 };
 
@@ -133,7 +136,7 @@ const createBufferFns = (gl: WebGL2RenderingContext) => (target = GL_ARRAY_BUFFE
     const thisObj: BufferState = {
         buf_: buf,
         bind_() { gl.bindBuffer(target, buf); return thisObj; },
-        setData_(data) { gl.bufferData(target, data, mode); return thisObj; },
+        setData_(data) { this.bind_(); gl.bufferData(target, data, mode); return thisObj; },
     };
     return thisObj;
 };
@@ -141,12 +144,19 @@ const createBufferFns = (gl: WebGL2RenderingContext) => (target = GL_ARRAY_BUFFE
 type TextureState = {
     tex_: WebGLTexture;
     bind_: () => TextureState;
+    /**
+     * Binds texture automatically.
+     */
     setImage_: (imgSrc: string) => TextureState;
     setFilter_: (type?: number) => TextureState;
     setWrap_: (type?: number) => TextureState;
+    /**
+     * Binds texture automatically.
+     */
     setTexData_: (data: ArrayBufferView, level?: number, internalFormat?: number, width?: number, height?: number, border?: number, format?: number, type?: number, alignment?: number) => TextureState;
     /**
-     * Only needed when using multiple textures in a single program
+     * Only needed when using multiple textures in a single program.
+     * Binds texture automatically.
      */
     setUnit_: (loc: WebGLUniformLocation, unit: number) => TextureState;
 };
@@ -188,8 +198,8 @@ const createTextureFns = (gl: WebGL2RenderingContext) => (target = GL_TEXTURE_2D
         },
         setUnit_(loc: WebGLUniformLocation, unit: number) {
             gl.uniform1i(loc, unit);
-            thisObj.bind_();
             gl.activeTexture(GL_TEXTURE0 + unit);
+            thisObj.bind_();
             return thisObj;
         }
     };
@@ -201,6 +211,7 @@ const createTextureFns = (gl: WebGL2RenderingContext) => (target = GL_TEXTURE_2D
 type EBState = {
     buf_: WebGLBuffer;
     bind_: () => EBState;
+    // automatically binds EB
     setIndices_: (data: number[]) => EBState;
 };
 
@@ -210,6 +221,7 @@ const createElementBufferFns = (gl: WebGL2RenderingContext) => (mode = GL_STATIC
         buf_: buf,
         bind_() { gl.bindBuffer(GL_ELEMENT_ARRAY_BUFFER, buf); return thisObj; },
         setIndices_(data) {
+            thisObj.bind_();
             gl.bufferData(GL_ELEMENT_ARRAY_BUFFER, new Uint16Array(data), mode);
             return thisObj;
         },
