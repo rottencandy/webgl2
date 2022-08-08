@@ -174,8 +174,8 @@ forNorm(() => {
 });
 
 runShader.use_();
-distTex.setUnit_(runShader.uniform_`uDistTex`.loc, 0);
-normTex.setUnit_(runShader.uniform_`uNormTex`.loc, 1);
+distTex.setUnit_(runShader.uniform_`uDistTex`.loc_, 0);
+normTex.setUnit_(runShader.uniform_`uNormTex`.loc_, 1);
 
 export const update = (dt: number) => {
     cam.update_(dt);

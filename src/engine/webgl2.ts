@@ -56,7 +56,7 @@ const uniformSetterFns = (gl: WebGL2RenderingContext, prg: WebGLProgram) => (nam
     const loc = gl.getUniformLocation(prg, name as unknown as string);
 
     return {
-        loc,
+        loc_: loc,
         u1f_: (x: number) => gl.uniform1f(loc, x),
         u2f_: (x: number, y: number) => gl.uniform2f(loc, x, y),
         u3f_: (x: number, y: number, z: number) => gl.uniform3f(loc, x, y, z),
