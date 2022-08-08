@@ -70,10 +70,10 @@ const uniformSetterFns = (gl: WebGL2RenderingContext, prg: WebGLProgram) => (nam
 type ShaderState = {
     prg_: WebGLProgram;
     use_: () => ShaderState;
-    // TODO:
+    // TODO: proper type
     uniform_: ReturnType<typeof uniformSetterFns>;
     /** @deprecated only for extreme cases, try to use `layout(location=n)` in shader */
-    attribLoc_: (name: TemplateStringsArray) => number;
+    attribLoc_: (name: string) => number;
 };
 
 const createShaderFns = (gl: WebGL2RenderingContext) => (vSource: string, fSource: string): ShaderState => {
@@ -93,7 +93,7 @@ const createShaderFns = (gl: WebGL2RenderingContext) => (vSource: string, fSourc
         prg_: prg,
         uniform_: uniformSetterFns(gl, prg),
         use_() { gl.useProgram(prg); return thisObj; },
-        attribLoc_: (name) => gl.getAttribLocation(prg, name as unknown as string),
+        attribLoc_: (name) => gl.getAttribLocation(prg, name),
     };
 
     return thisObj;
@@ -157,6 +157,7 @@ type TextureState = {
     /**
      * Only needed when using multiple textures in a single program.
      * Binds texture automatically.
+     * Note: Always set correct active texture before setting unit
      */
     setUnit_: (loc: WebGLUniformLocation, unit: number) => TextureState;
 };
@@ -239,20 +240,56 @@ type AttribPointers = [
 ];
 
 type WebglState = {
+    /** webgl2 context */
     gl_: WebGL2RenderingContext;
+    /** Clear target */
     clear_: () => void;
+    /** Create shader program state */
     shader_: (vs: string, fs: string) => ShaderState;
+    /** Create buffer state */
     buffer_: (target?: number, mode?: number) => BufferState;
+    /** Create texture state */
     texture_: (target?: number) => TextureState;
+    /** Create EBO state */
     elementBuffer_: (mode?: number) => EBState;
+    /** Create VAO state */
     VAO_: () => VAOState;
+    /** Draw to target */
     draw_: (count: number, mode?: number, offset?: number) => void;
+    /** Draw using elements */
     drawElements_: (count: number, mode?: number, offset?: number) => void;
+    /**
+    * Rescale target canvas to match width/height scale ratio
+    * Uses window.innerWidth/Height to calculate updated ratio
+    * Should ideally be called whenever canvas is rescaled.
+    */
     resize_: () => void;
-    changeSize_: (w: number, h: number) => void;
+    /**
+    * Manually change canvas size to given width, height
+    * This changes the saved ratio and will be used instead of initially supplied width/height
+    */
+    changeSize_: (width: number, height: number) => void;
+    /**
+    * Takes in a set of data, indices, attribs and
+    * returns a ready-to-use VAO with loaded draw fn.
+    * Can be used with any shader prg.
+    *
+    * Internally creates Buffer, VAO, EBO
+    *
+    * @param data [dataArray, indicesArray]
+    * @param attribs array of attrib pointers
+    */
     createMesh_: (data: [Float32Array, number[]], attribs: AttribPointers[]) => {
-        vao_: VAOState, draw_: () => void
+        /** VAO state */
+        vao_: VAOState,
+        /** Loaded draw function */
+        draw_: () => void,
     };
+    /**
+    * Create a new target texture to render to.
+    * Returns a decorator function that renders to the texture when
+    * any draw calls are made inside it.
+    */
     renderTargetContext_: (tex: TextureState, width?: number, height?: number, internalFormat?: number, format?: number) => (fn: () => void) => void;
 };
 
