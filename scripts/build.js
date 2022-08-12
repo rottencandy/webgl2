@@ -1,4 +1,4 @@
-const glslxPlugin = require('@rottencandy/esbuild-plugin-glslx');
+const glslPlugin = require('esbuild-plugin-spglsl');
 
 require('esbuild').build({
     entryPoints: ['src/main.js', 'src/app.css'],
@@ -9,6 +9,6 @@ require('esbuild').build({
     format: 'iife',
     outdir: 'app',
     mangleProps: /_$/,
-    plugins: [glslxPlugin({ prettyPrint: false, renaming: 'all' })],
+    plugins: [glslPlugin({ minify: true, mangle: true })],
     loader: { '.png': 'dataurl' }
 }).catch(() => process.exit(1))

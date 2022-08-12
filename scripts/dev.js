@@ -1,4 +1,4 @@
-const glslxPlugin = require('@rottencandy/esbuild-plugin-glslx');
+const glslPlugin = require('esbuild-plugin-spglsl');
 const esbuild = require('esbuild');
 
 esbuild.serve({
@@ -17,7 +17,7 @@ esbuild.serve({
     //        else console.log('Build succeeded!')
     //    },
     //},
-    plugins: [glslxPlugin({ prettyPrint: true, renaming: 'none' })],
+    plugins: [glslPlugin({ minify: false, mangle: false })],
     loader: { '.png': 'dataurl' }
 })
     .then(server => console.log(`Serving at: http://localhost:${server.port}`))
