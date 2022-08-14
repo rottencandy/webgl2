@@ -24,12 +24,22 @@ export const lerp = (from: number, to: number, weight: number) => {
 };
 
 export const clamp = (value: number, min: number, max: number) => {
-    if (value < min) {
-        return min;
-    } else if (value > max) {
-        return max;
-    }
-    return value;
+    value < min ? min : value > max ? max : value;
+};
+
+/**
+* Returns true every time `interval` ticks have passed.
+*/
+export const ticker = (interval: number) => {
+    let ticks = 0;
+    return () => {
+        if (++ticks > interval) {
+            ticks = 0;
+            return true;
+        } else {
+            return false;
+        }
+    };
 };
 
 type Tween = {

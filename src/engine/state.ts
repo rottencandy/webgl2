@@ -5,6 +5,8 @@ type StateObject = {
 /**
  * Create linear state machine.
  * Initial state is always first function.
+ * States can return a function instead of string,
+ * which becomes the next state.
  *
  * @param states - Array of state functions, each optionally returning the next state.
  *
@@ -23,9 +25,13 @@ export const createStateMachine = (states: StateObject, initial: string) => {
     return {
         run_: (...data: any[]) => {
             const next = current(...data);
-            if (next) current = states[next];
+            if (typeof next === 'function') {
+                current = next;
+            } else if (next) {
+                current = states[next];
+            }
             return next;
         },
-        reset_: (x: string) => current = states[x],
+        reset_: (state: string) => current = states[state],
     };
 }

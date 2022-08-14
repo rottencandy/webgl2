@@ -19,11 +19,11 @@ const vertexFaceSet = (xPos: 0|1|2, yPos: 0|1|2, zPos: 0|1|2, xyVal: number, zVa
 const indexFaceSet = (offset: number) => [0, 1, 2, 0, 2, 3][MAP](v => v + offset);
 
 /** vertex data contains vertices(0) and indices(1) */
-type VertexData = [Float32Array, number[]];
+type MeshData = [Float32Array, number[]];
 
 // plane {{{
 
-export const Plane = (s: number): VertexData => {
+export const Plane = (s: number): MeshData => {
     const arr: number[] = [];
     const vertices = vertexFaceSet(0, 1, 2, s, 0);
     // embed normal position (0, 0, 1) for each vertex set
@@ -37,7 +37,7 @@ export const planeTexCoords = F32([...vertexFaceSet(0, 1, 2, 1, 0)][FLAT]());
 
 // cube {{{
 
-export const Cube = (s: number): VertexData => {
+export const Cube = (s: number): MeshData => {
     const arr: number[] = [];
     const vertices = [
         // front face
