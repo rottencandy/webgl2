@@ -70,15 +70,14 @@ export const setupKeyListener = (canvas: HTMLCanvasElement, width: number, heigh
         }
     }
 
-    onkeydown = setKeyState(!!1);
-    onkeyup = setKeyState(!!0);
+    window.onkeydown = setKeyState(!!1);
+    window.onkeyup = setKeyState(!!0);
 
     canvas.onpointerdown = () => Keys.clicked_ = !!1;
     canvas.onpointerup = () => Keys.clicked_ = !!0;
     canvas.onpointermove = e => {
-        const ratio = deviceScaleRatio(width, height);
-        Keys.touchX_ = e.offsetX / ratio;
-        Keys.touchY_ = e.offsetY / ratio;
+        Keys.ptrX_ = e.offsetX / canvas.clientWidth;
+        Keys.ptrY_ = e.offsetY / canvas.clientHeight;
     };
 
     canvas.ontouchstart = canvas.ontouchmove = canvas.ontouchend = canvas.ontouchcancel = e => {
@@ -86,10 +85,9 @@ export const setupKeyListener = (canvas: HTMLCanvasElement, width: number, heigh
         Keys.clicked_ = e.touches.length > 0;
         if (Keys.clicked_) {
             const offset = canvas.getBoundingClientRect();
-            const ratio = deviceScaleRatio(width, height);
-            Keys.touchX_ = (e.touches[0].clientX - offset.left) / ratio;
+            Keys.ptrX_ = (e.touches[0].clientX - offset.left) / canvas.clientWidth;
             // offset.top is not needed since canvas is always stuck to top
-            Keys.touchY_ = e.touches[0].clientY / ratio;
+            Keys.ptrY_ = e.touches[0].clientY / canvas.clientHeight;
         }
     };
 
@@ -100,11 +98,11 @@ export const setupKeyListener = (canvas: HTMLCanvasElement, width: number, heigh
             }
         };
     }
-    DOC.addEventListener('pointerlockchange', () => {
-        Keys.pointerLocked_ = DOC.pointerLockElement === canvas;
+    document.addEventListener('pointerlockchange', () => {
+        Keys.pointerLocked_ = document.pointerLockElement === canvas;
     });
-    DOC.onmousemove = (e) => {
-        Keys.ptrX_ = e.movementX;
-        Keys.ptrY_ = e.movementY;
+    canvas.onmousemove = (e) => {
+        Keys.ptrX_ = e.offsetX / canvas.clientWidth;
+        Keys.ptrY_ = e.offsetY / canvas.clientHeight;
     };
 };

@@ -1,5 +1,3 @@
-import { SIN } from '../globals';
-
 type TweenFn = (t: number) => number;
 
 export const LINEAR: TweenFn = t => t;
@@ -9,11 +7,11 @@ export const EASEINQUINT: TweenFn = t => t * t * t * t * t;
 export const EASEINOUTCUBIC: TweenFn = t => t < .5 ? 4 * t * t * t : (t - 1) * (2 * t - 2) * (2 * t - 2) + 1;
 export const THERENBACK: TweenFn = t => t < .5 ? 2 * t : 2 * (1 - t)
 // elastic bounce effect at the beginning
-export const EASEINELASTIC: TweenFn = (t) => (.04 - .04 / t) * SIN(25 * t) + 1;
+export const EASEINELASTIC: TweenFn = (t) => (.04 - .04 / t) * Math.sin(25 * t) + 1;
 // elastic bounce effect at the end
-export const EASEOUTELASTIC: TweenFn = (t) => .04 * t / (--t) * SIN(25 * t);
+export const EASEOUTELASTIC: TweenFn = (t) => .04 * t / (--t) * Math.sin(25 * t);
 // elastic bounce effect at the beginning and end
-export const EASEINOUTELASTIC: TweenFn = (t) => (t -= .5) < 0 ? (.02 + .01 / t) * SIN(50 * t) : (.02 - .01 / t) * SIN(50 * t) + 1;
+export const EASEINOUTELASTIC: TweenFn = (t) => (t -= .5) < 0 ? (.02 + .01 / t) * Math.sin(50 * t) : (.02 - .01 / t) * Math.sin(50 * t) + 1;
 
 /**
 * Linearly interpolate between two values.
@@ -32,8 +30,8 @@ export const clamp = (value: number, min: number, max: number) => {
 */
 export const ticker = (interval: number) => {
     let ticks = 0;
-    return () => {
-        if (++ticks > interval) {
+    return (dt: number) => {
+        if ((ticks+=dt) > interval) {
             ticks = 0;
             return true;
         } else {
