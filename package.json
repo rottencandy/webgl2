@@ -17,11 +17,11 @@
     "bundle": "./bundle.sh"
   },
   "devDependencies": {
-    "esbuild": "^0.15.1",
+    "esbuild": "^0.15.3",
     "esbuild-plugin-spglsl": "^0.0.3",
     "html-inline": "^1.2.0",
     "roadroller": "^2.1.0",
     "spglsl": "^0.2.6",
-    "uglify-js": "^3.16.3"
+    "uglify-js": "^3.17.0"
   }
 }
