@@ -40,36 +40,30 @@ export const ticker = (interval: number) => {
     };
 };
 
-type Tween = {
-    interpolate_: (delta: number) => boolean;
-    value_: number;
-    reset_: () => void;
-};
-
-// TODO: Make all tweens update singularly through mainloop?
-export const createTween = (from: number, to: number, func = LINEAR, duration = 1): Tween => {
+export const createTween = (from: number, to: number, duration = 1, func = LINEAR) => {
   // t goes from 0 -> duration
-  let t = 0, value_ = from;
+  let t = 0;
 
-  const interpolate_ = (delta: number) => {
-    // check if interpolation is done
-    if (t >= duration) {
-      value_ = to;
-      return !1;
+  const obj = {
+    val: from,
+    done: false,
+    step(delta: number) {
+        // check if interpolation is done
+        if (obj.done) {
+            obj.val = to;
+            return obj.val;
 
-    } else {
-      t += delta;
-      // convert t into range 0 -> 1 and get interpolated value
-      value_ = lerp(from, to, func(t / duration))
-      return !0;
-    }
+        } else {
+            obj.done = t >= duration;
+
+            t += delta;
+            // convert t into range 0 -> 1 and get interpolated value
+            obj.val = lerp(from, to, func(t / duration))
+            return obj.val;
+        }
+    },
+    reset: () => (t = 0, obj.val = from, obj.done = false),
   };
 
-  const reset_ = () => (t = 0, value_ = from);
-
-  return {
-    interpolate_,
-    value_,
-    reset_,
-  }
+  return obj;
 };
