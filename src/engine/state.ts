@@ -1,7 +1,8 @@
-type StateFn = (...args: any[]) => string | number | StateFn | undefined;
+type StateKey = string | number;
+type StateFn = (...args: any[]) => StateKey | StateFn | undefined;
 
 type StateObject = {
-    [key: string | number]: StateFn
+    [key: StateKey]: StateFn
 };
 
 /**
@@ -13,31 +14,50 @@ type StateObject = {
  * @param states - Array of state functions, each optionally returning the next state.
  *
  * @example
- * const step = createSM({
+ * const sm = createSM({
  *   IDLE: () => {},
  *   MOVE: () => {}
  * });
  *
- * @returns `run`: Step function, returns last run state.
+ * @returns
+ * `run`: Step function, returns last run state.
  * Any args will be passed on to state function.
  * `reset`: reset state to given key.
+ * `state`: the current state.
+ * `onEnter`: function to run when a state is entered
+ * `onExit`: function to run when a state is left
  */
-export const createStateMachine = (states: StateObject, initial: string | number) => {
+export const createStateMachine = (states: StateObject, initial: StateKey) => {
     let current = states[initial];
+    const enterStates: StateObject = {};
+    const exitStates: StateObject = {};
+
     const thisObj = {
         state: initial,
-        run: (...data: any[]) => {
+        run(...data: any[]) {
             const next = current(...data);
             if (typeof next === 'function') {
                 current = next;
             } else if (next !== undefined) {
+                if (exitStates[thisObj.state]) exitStates[thisObj.state](...data);
+                if (enterStates[next]) enterStates[next](...data);
                 current = states[next];
                 thisObj.state = next;
             }
+            return thisObj;
         },
-        reset: (state: string | number) => {
+        reset(state: StateKey) {
             current = states[state];
             thisObj.state = state;
+            return thisObj;
+        },
+        onEnter(state: StateKey, fn: StateFn) {
+            enterStates[state] = fn;
+            return thisObj;
+        },
+        onExit(state: StateKey, fn: StateFn) {
+            exitStates[state] = fn;
+            return thisObj;
         },
     };
 
