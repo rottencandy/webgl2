@@ -338,7 +338,7 @@ export const createGLContext = (canvas: HTMLCanvasElement, width = 400, height =
             const vao = thisObj.VAO();
             thisObj.buffer().setData(data);
             thisObj.elementBuffer().setIndices(indices);
-            attribs.map(attr => vao.setPtr(...attr));
+            attribs.forEach(attr => vao.setPtr(...attr));
             return { vao: vao, draw: () => thisObj.drawElements(indices.length) };
         },
         resize() {

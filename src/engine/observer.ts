@@ -1,18 +1,18 @@
 type Callback = (arg: any) => void;
 
-const CALLBACKS: { [event: string]: Callback[] } = {};
+const CALLBACKS: { [event: number]: Callback[] } = {};
 
-export const enable = (event: string, callback: Callback) => {
+export const enable = (event: number, callback: Callback) => {
     CALLBACKS[event] = CALLBACKS[event] || [];
     CALLBACKS[event].push(callback);
 }
 
-export const disable = (event: string, callback: Callback) => {
+export const disable = (event: number, callback: Callback) => {
     const fns = CALLBACKS[event];
     fns && fns.filter(fn => fn != callback);
 }
 
-export const emit = (event: string, arg: any) => {
+export const emit = (event: number, arg: any) => {
     const fns = CALLBACKS[event];
-    fns && fns.map(fn => fn(arg));
+    fns && fns.forEach(fn => fn(arg));
 }
