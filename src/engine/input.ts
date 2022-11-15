@@ -31,7 +31,6 @@ export const Keys: WatchedKeys = {
 
 export const dirKeysPressed = (): boolean => !!(Keys.left || Keys.right || Keys.up || Keys.down);
 
-const ARROW = 'Arrow';
 let justClicked = false;
 
 /**
@@ -41,21 +40,21 @@ export const setupKeyListener = (canvas: HTMLCanvasElement) => {
     // TODO: use keycode here?
     const setKeyState = (value: boolean) => ({ key: code }) => {
         switch (code) {
-            case ARROW + 'Up':
+            case 'ArrowUp':
             case 'w':
             case 'z':
                 Keys.up = value;
                 break;
-            case ARROW + 'Down':
+            case 'ArrowDown':
             case 's':
                 Keys.down = value;
                 break;
-            case ARROW + 'Left':
+            case 'ArrowLeft':
             case 'a':
             case 'q':
                 Keys.left = value;
                 break;
-            case ARROW + 'Right':
+            case 'ArrowRight':
             case 'd':
                 Keys.right = value;
                 break;

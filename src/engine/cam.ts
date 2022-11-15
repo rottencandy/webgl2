@@ -12,32 +12,32 @@ type CamState = {
     /**
      * Move camera along XYZ
      */
-    move_: (x: number, y: number, z: number) => CamState;
+    move: (x: number, y: number, z: number) => CamState;
     /**
      * Rotate camera (radians)
      */
-    rotate_: (pitch: number, yaw: number) => CamState;
+    rotate: (pitch: number, yaw: number) => CamState;
     /**
      * Move camera to absolute point XYZ
      */
-    moveTo_: (x: number, y: number, z: number) => CamState;
+    moveTo: (x: number, y: number, z: number) => CamState;
     /**
      * Change target focus point
      * @deprecated not yet implemented
      */
-    lookAt_: (x: number, y: number, z: number) => CamState;
+    lookAt: (x: number, y: number, z: number) => CamState;
     /**
      * recalculate transform matrix
      */
-    recalculate_: () => CamState;
+    recalculate: () => CamState;
     /**
      * view-projection matrix
      */
-    eye_: Vector;
-    lookDir_: Vector;
-    matrix_: Matrix;
-    viewMatrix_: Matrix;
-    projectionMatrix_: Matrix;
+    eye: Vector;
+    lookDir: Vector;
+    matrix: Matrix;
+    viewMatrix: Matrix;
+    projectionMatrix: Matrix;
 };
 
 const MAX_PITCH = Math.PI / 2 - 0.01;
@@ -63,7 +63,7 @@ const Camera = (fov: number, zNear: number, zFar: number, aspect: number): CamSt
     const t_target = V3create();
 
     const thisObj: CamState = {
-        move_(x, y, z) {
+        move(x, y, z) {
             if (z) {
                 V3multiplySc(t_move, front, z);
                 // reset y dir, so we always move paralell to the ground
@@ -83,7 +83,7 @@ const Camera = (fov: number, zNear: number, zFar: number, aspect: number): CamSt
             }
             return thisObj;
         },
-        rotate_(ptch, yw) {
+        rotate(ptch, yw) {
             pitch -= ptch;
             yaw += yw;
             if (pitch > MAX_PITCH)
@@ -98,25 +98,25 @@ const Camera = (fov: number, zNear: number, zFar: number, aspect: number): CamSt
             V3normalize(front, t_dir);
             return thisObj;
         },
-        moveTo_(x, y, z) {
+        moveTo(x, y, z) {
             V3set(pos, x, y, z);
             return thisObj;
         },
         // TODO
-        lookAt_(_x, _y, _z) {
+        lookAt(_x, _y, _z) {
             //V3set(target, x, y, z);
             return thisObj;
         },
-        recalculate_() {
+        recalculate() {
             M4lookAt(t_view, pos, V3add(t_target, pos, front), up);
-            M4multiply(thisObj.matrix_, projectionMat, t_view);
+            M4multiply(thisObj.matrix, projectionMat, t_view);
             return thisObj;
         },
-        matrix_: M4clone(projectionMat),
-        viewMatrix_: viewMat,
-        projectionMatrix_: projectionMat,
-        eye_: pos,
-        lookDir_: front,
+        matrix: M4clone(projectionMat),
+        viewMatrix: viewMat,
+        projectionMatrix: projectionMat,
+        eye: pos,
+        lookDir: front,
     };
 
     return thisObj;

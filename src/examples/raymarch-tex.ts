@@ -70,8 +70,8 @@ const runShader = ctx.shader_(
         float dO = 0.;
         for (int i = 0; i < 256; i++) {
             vec3 p = ro + rd * dO;
-            if (p.x > S  || p.y > S  || p.z > S) { return vec4(SKY_ID, 0,0,0); }
-            if (p.x < 0. || p.y < 0. || p.z < 0.) { return vec4(SKY_ID, 0,0,0); }
+            if (p.x > S  || p.y > S  || p.z > S ||
+                p.x < 0. || p.y < 0. || p.z < 0.) { return vec4(SKY_ID, 0,0,0); }
             vec4 dists = CachedDist(p);
             float dS = dists.x;
             dO += dS;
