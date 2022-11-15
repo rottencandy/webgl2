@@ -1,18 +1,21 @@
 type Callback = (arg: any) => void;
 
-const CALLBACKS: { [event: number]: Callback[] } = {};
+const CALLBACKS: { [event: number | string]: Callback[] } = {};
 
-export const enable = (event: number, callback: Callback) => {
+export const obsInit = (event: number | string) => {
+    CALLBACKS[event] = [];
+    return (data: any) => CALLBACKS[event].forEach(fn => fn(data));
+};
+
+export const obsEnable = (event: number | string, callback: Callback) => {
     CALLBACKS[event] = CALLBACKS[event] || [];
     CALLBACKS[event].push(callback);
 }
 
-export const disable = (event: number, callback: Callback) => {
-    const fns = CALLBACKS[event];
-    fns && fns.filter(fn => fn != callback);
+export const obsDisable = (event: number | string, callback: Callback) => {
+    CALLBACKS[event].filter(fn => fn != callback);
 }
 
-export const emit = (event: number, arg: any) => {
-    const fns = CALLBACKS[event];
-    fns && fns.forEach(fn => fn(arg));
+export const obsEmit = (event: number | string, arg: any) => {
+    CALLBACKS[event].forEach(fn => fn(arg));
 }

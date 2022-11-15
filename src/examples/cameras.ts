@@ -4,25 +4,29 @@ import { radians } from '../globals';
 
 export const FPSCamera = (speed = .01, x = 0, y = 0, z = 20) => {
     const cam = Camera(radians(45), 1, 500, 400 / 300)
-        .moveTo_(x, y, z);
+        .moveTo(x, y, z);
 
     return {
-        update_: (dt: number) => {
+        update: (dt: number) => {
             const spd = speed * dt;
-            const fd = Keys.up_ && spd;
-            const bk = Keys.down_ && -spd;
-            const lt = Keys.left_ && spd;
-            const rt = Keys.right_ && -spd;
-            cam.move_(lt + rt, 0, fd + bk);
+            const fd = Keys.up && spd;
+            const bk = Keys.down && -spd;
+            const lt = Keys.left && spd;
+            const rt = Keys.right && -spd;
+            // @ts-ignore
+            cam.move(lt + rt, 0, fd + bk);
 
-            if (Keys.pointerLocked_) {
-                cam.rotate_(Keys.ptrY_ / 1e3, Keys.ptrX_ / 1e3);
+            if (Keys.pointerLocked) {
+                cam.rotate(Keys.ptrY / 1e3, Keys.ptrX / 1e3);
                 // TODO: do this at the end of the update step
-                Keys.ptrX_ = Keys.ptrY_ = 0;
+                Keys.ptrX = Keys.ptrY = 0;
             }
         },
-        mat_: () => cam.recalculate_().matrix_,
-        eye_: cam.eye_,
-        lookDir_: cam.lookDir_,
+        mat: () => cam.recalculate().matrix,
+        eye: cam.eye,
+        lookDir: cam.lookDir,
     };
+};
+
+export const Camera2D = () => {
 };

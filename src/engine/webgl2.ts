@@ -45,25 +45,39 @@ const clearFn = (gl: WebGL2RenderingContext) => () => {
     gl.clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 };
 
-const createShader = (gl: WebGL2RenderingContext, type: number, source: string) => {
-    const shader = gl.createShader(type);
+const createShader = (
+    gl: WebGL2RenderingContext,
+    type: number,
+    source: string,
+) => {
+    const shader = gl.createShader(type) as WebGLShader;
     gl.shaderSource(shader, source);
     gl.compileShader(shader);
     return shader;
 };
 
-const uniformSetterFns = (gl: WebGL2RenderingContext, prg: WebGLProgram) => (name: TemplateStringsArray) => {
+const uniformSetterFns = (
+    gl: WebGL2RenderingContext,
+    prg: WebGLProgram
+) => (name: TemplateStringsArray) => {
     const loc = gl.getUniformLocation(prg, name as unknown as string);
 
     return {
         loc,
-        u1f: (x: number) => gl.uniform1f(loc, x),
-        u2f: (x: number, y: number) => gl.uniform2f(loc, x, y),
-        u3f: (x: number, y: number, z: number) => gl.uniform3f(loc, x, y, z),
-        u4f: (x: number, y: number, z: number, w: number) => gl.uniform4f(loc, x, y, z, w),
-        m3fv: (data: Float32List, transpose = false) => gl.uniformMatrix3fv(loc, transpose, data),
-        m4fv: (data: Iterable<number>, transpose = false) => gl.uniformMatrix4fv(loc, transpose, data),
-        u1i: (x: number) => gl.uniform1i(loc, x),
+        u1f: (x: number) =>
+            gl.uniform1f(loc, x),
+        u2f: (x: number, y: number) =>
+            gl.uniform2f(loc, x, y),
+        u3f: (x: number, y: number, z: number) =>
+            gl.uniform3f(loc, x, y, z),
+        u4f: (x: number, y: number, z: number, w: number) =>
+            gl.uniform4f(loc, x, y, z, w),
+        m3fv: (data: Float32List, transpose = false) =>
+            gl.uniformMatrix3fv(loc, transpose, data),
+        m4fv: (data: Iterable<number>, transpose = false) =>
+            gl.uniformMatrix4fv(loc, transpose, data),
+        u1i: (x: number) =>
+            gl.uniform1i(loc, x),
     };
 };
 
@@ -71,12 +85,16 @@ type ShaderState = {
     prg: WebGLProgram;
     use: () => ShaderState;
     uniform: ReturnType<typeof uniformSetterFns>;
-    /** @deprecated only for extreme cases, try to use `layout(location=n)` in shader */
+    /** @deprecated only for extreme cases,
+    * try to use `layout(location=n)` in shader */
     attribLoc: (name: string) => number;
 };
 
-const createShaderFns = (gl: WebGL2RenderingContext) => (vSource: string, fSource: string): ShaderState => {
-    const prg = gl.createProgram();
+const createShaderFns = (gl: WebGL2RenderingContext) => (
+    vSource: string,
+    fSource: string,
+): ShaderState => {
+    const prg = gl.createProgram() as WebGLProgram;
     gl.attachShader(prg, createShader(gl, GL_VERTEX_SHADER, vSource));
     gl.attachShader(prg, createShader(gl, GL_FRAGMENT_SHADER, fSource));
     gl.linkProgram(prg);
@@ -101,19 +119,33 @@ const createShaderFns = (gl: WebGL2RenderingContext) => (vSource: string, fSourc
 type VAOState = {
     vao: WebGLVertexArrayObject;
     bind: () => VAOState;
-    // binds VAO automatically
-    setPtr: (loc: number, size: number, stride?: number, offset?: number, type?: number, normalize?: boolean) => VAOState;
+    /* binds VAO automatically */
+    setPtr: (
+        loc: number,
+        size: number,
+        stride?: number,
+        offset?: number,
+        type?: number,
+        normalize?: boolean,
+    ) => VAOState;
 };
 
 const createVAOFns = (gl: WebGL2RenderingContext) => (): VAOState => {
-    const vao = gl.createVertexArray();
+    const vao = gl.createVertexArray() as WebGLVertexArrayObject;
     const thisObj: VAOState = {
         vao,
         bind() {
             gl.bindVertexArray(vao);
             return thisObj;
         },
-        setPtr(loc, size, stride = 0, offset = 0, type = GL_FLOAT, normalize = false) {
+        setPtr(
+            loc,
+            size,
+            stride = 0,
+            offset = 0,
+            type = GL_FLOAT,
+            normalize = false
+        ) {
             this.bind_();
             gl.enableVertexAttribArray(loc);
             gl.vertexAttribPointer(loc, size, type, normalize, stride, offset);
@@ -126,18 +158,23 @@ const createVAOFns = (gl: WebGL2RenderingContext) => (): VAOState => {
 type BufferState = {
     buf: WebGLBuffer;
     bind: () => BufferState;
-    // binds buffer automatically
+    /* binds buffer automatically */
     setData: (data: BufferSource) => BufferState;
 };
 
-const createBufferFns = (gl: WebGL2RenderingContext) => (target = GL_ARRAY_BUFFER, mode = GL_STATIC_DRAW): BufferState => {
-    const buf = gl.createBuffer();
-    const thisObj: BufferState = {
-        buf,
-        bind() { gl.bindBuffer(target, buf); return thisObj; },
-        setData(data) { this.bind_(); gl.bufferData(target, data, mode); return thisObj; },
-    };
-    return thisObj.bind();
+const createBufferFns = (gl: WebGL2RenderingContext) =>
+    (target = GL_ARRAY_BUFFER, mode = GL_STATIC_DRAW): BufferState => {
+        const buf = gl.createBuffer() as WebGLBuffer;
+        const thisObj: BufferState = {
+            buf,
+            bind() { gl.bindBuffer(target, buf); return thisObj; },
+            setData(data) {
+                this.bind_();
+                gl.bufferData(target, data, mode);
+                return thisObj;
+            },
+        };
+        return thisObj.bind();
 };
 
 type TextureState = {
@@ -157,7 +194,17 @@ type TextureState = {
     /**
      * Binds texture automatically.
      */
-    setTexData: (data: ArrayBufferView, level?: number, internalFormat?: number, width?: number, height?: number, border?: number, format?: number, type?: number, alignment?: number) => TextureState;
+    setTexData: (
+        data: ArrayBufferView | null,
+        level?: number,
+        internalFormat?: number,
+        width?: number,
+        height?: number,
+        border?: number,
+        format?: number,
+        type?: number,
+        alignment?: number,
+    ) => TextureState;
     /**
      * Only needed when using multiple textures in a single program.
      * Binds texture automatically.
@@ -167,9 +214,12 @@ type TextureState = {
 };
 
 
-const createTextureFns = (gl: WebGL2RenderingContext) => (target = GL_TEXTURE_2D) => {
-    const tex = gl.createTexture();
-    const setParam = (key: number, val: number) => gl.texParameteri(target, key, val);
+const createTextureFns = (gl: WebGL2RenderingContext) => (
+    target = GL_TEXTURE_2D
+) => {
+    const tex = gl.createTexture() as WebGLTexture;
+    const setParam = (key: number, val: number) =>
+        gl.texParameteri(target, key, val);
     const thisObj: TextureState = {
         tex,
         bind() { gl.bindTexture(target, tex); return thisObj; },
@@ -199,13 +249,33 @@ const createTextureFns = (gl: WebGL2RenderingContext) => (target = GL_TEXTURE_2D
             };
             return thisObj;
         },
-        setTexData(data: ArrayBufferView, level = 0, internalFormat = GL_R8, width = 2, height = 2, border = 0, format = GL_RED, type = GL_UNSIGNED_BYTE, alignment = 1) {
+        setTexData(
+            data,
+            level = 0,
+            internalFormat = GL_R8,
+            width = 2,
+            height = 2,
+            border = 0,
+            format = GL_RED,
+            type = GL_UNSIGNED_BYTE,
+            alignment = 1,
+        ) {
             thisObj.bind();
             gl.pixelStorei(GL_UNPACK_ALIGNMENT, alignment);
-            gl.texImage2D(target, level, internalFormat, width, height, border, format, type, data);
+            gl.texImage2D(
+                target,
+                level,
+                internalFormat,
+                width,
+                height,
+                border,
+                format,
+                type,
+                data,
+            );
             return thisObj;
         },
-        setUnit(loc: WebGLUniformLocation, unit: number) {
+        setUnit(loc, unit) {
             gl.uniform1i(loc, unit);
             gl.activeTexture(GL_TEXTURE0 + unit);
             thisObj.bind();
@@ -213,25 +283,32 @@ const createTextureFns = (gl: WebGL2RenderingContext) => (target = GL_TEXTURE_2D
         }
     };
     // set a temporary blue texture
-    thisObj.setTexData(new Uint8Array([0, 0, 255, 255]), 0, GL_RGBA, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE);
+    thisObj.setTexData(
+        new Uint8Array([0, 0, 255, 255]),
+        0, GL_RGBA,
+        1, 1, 0,
+        GL_RGBA,
+        GL_UNSIGNED_BYTE
+    );
     return thisObj;
 };
 
 type EBState = {
     buf: WebGLBuffer;
     bind: () => EBState;
-    // automatically binds EB
+    /* automatically binds EB */
     setIndices: (data: number[]) => EBState;
 };
 
-const createElementBufferFns = (gl: WebGL2RenderingContext) => (mode = GL_STATIC_DRAW): EBState => {
-    const buf = gl.createBuffer();
+const createElementBufferFns = (gl: WebGL2RenderingContext) => (
+    mode = GL_STATIC_DRAW,
+): EBState => {
+    const plainBuf = createBufferFns(gl)(GL_ELEMENT_ARRAY_BUFFER, mode);
     const thisObj: EBState = {
-        buf,
-        bind() { gl.bindBuffer(GL_ELEMENT_ARRAY_BUFFER, buf); return thisObj; },
+        buf: plainBuf.buf,
+        bind() { plainBuf.bind(); return thisObj; },
         setIndices(data) {
-            thisObj.bind();
-            gl.bufferData(GL_ELEMENT_ARRAY_BUFFER, new Uint16Array(data), mode);
+            plainBuf.setData(new Uint16Array(data));
             return thisObj;
         },
     };
@@ -244,7 +321,7 @@ type AttribPointers = [
     stride?: number,
     offset?: number,
     type?: number,
-    normalize?: boolean
+    normalize?: boolean,
 ];
 
 type WebglState = {
@@ -274,7 +351,8 @@ type WebglState = {
     resize: () => void;
     /**
     * Manually change canvas size to given width, height
-    * This changes the saved ratio and will be used instead of initially supplied width/height
+    * This changes the saved ratio and will be used
+    * instead of initially supplied width/height
     */
     changeSize: (width: number, height: number) => void;
     /**
@@ -298,11 +376,21 @@ type WebglState = {
     * Returns a decorator function that renders to the texture when
     * any draw calls are made inside it.
     */
-    renderTargetContext: (tex: TextureState, width?: number, height?: number, internalFormat?: number, format?: number) => (fn: () => void) => void;
+    renderTargetContext: (
+        tex: TextureState,
+        width?: number,
+        height?: number,
+        internalFormat?: number,
+        format?: number,
+    ) => (fn: () => void) => void;
 };
 
-export const createGLContext = (canvas: HTMLCanvasElement, width = 400, height = 300): WebglState => {
-    const gl = canvas.getContext('webgl2');
+export const createGLContext = (
+    canvas: HTMLCanvasElement,
+    width = 400,
+    height = 300
+): WebglState => {
+    const gl = canvas.getContext('webgl2') as WebGL2RenderingContext;
     if (!gl) {
         alert('Could not get gl context');
     };
@@ -339,7 +427,10 @@ export const createGLContext = (canvas: HTMLCanvasElement, width = 400, height =
             thisObj.buffer().setData(data);
             thisObj.elementBuffer().setIndices(indices);
             attribs.forEach(attr => vao.setPtr(...attr));
-            return { vao: vao, draw: () => thisObj.drawElements(indices.length) };
+            return {
+                vao: vao,
+                draw: () => thisObj.drawElements(indices.length),
+            };
         },
         resize() {
             const ratio = deviceScaleRatio(width, height);
@@ -349,18 +440,28 @@ export const createGLContext = (canvas: HTMLCanvasElement, width = 400, height =
             canvas.style.height = height * ratio + 'px';
             gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
             // display note if device is in potrait
-            document.getElementById('d').style.display = window.innerWidth < window.innerHeight ? 'block' : 'none';
+            (document.getElementById('d') as HTMLElement).style.display =
+                window.innerWidth < window.innerHeight ? 'block' : 'none';
         },
         changeSize(w, h) {
             width = w;
             height = h;
             thisObj.resize();
         },
-        renderTargetContext(target, w = width, h = height, internalFormat = GL_RGBA, format = GL_RGBA) {
-            const fb = gl.createFramebuffer();
-            target.setTexData(null, 0, internalFormat, w, h, 0, format).setFilter();
-            const bindFn = (target: WebGLFramebuffer) => gl.bindFramebuffer(GL_FRAMEBUFFER, target);
-            const setViewport = (w: number, h: number) => gl.viewport(0, 0, w, h);
+        renderTargetContext(
+            target,
+            w = width,
+            h = height,
+            internalFormat = GL_RGBA,
+            format = GL_RGBA,
+        ) {
+            const fb = gl.createFramebuffer() as WebGLFramebuffer;
+            target.setTexData(null, 0, internalFormat, w, h, 0, format)
+                .setFilter();
+            const bindFn = (target: WebGLFramebuffer | null) =>
+                gl.bindFramebuffer(GL_FRAMEBUFFER, target);
+            const setViewport = (w: number, h: number) =>
+                gl.viewport(0, 0, w, h);
             const withTarget = (ctxFn: () => void) => {
                 bindFn(fb);
                 setViewport(w, h);
@@ -371,12 +472,29 @@ export const createGLContext = (canvas: HTMLCanvasElement, width = 400, height =
             };
             // setup depth texture
             withTarget(() => {
-                gl.framebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, target.tex, 0);
+                gl.framebufferTexture2D(
+                    GL_FRAMEBUFFER,
+                    GL_COLOR_ATTACHMENT0,
+                    GL_TEXTURE_2D,
+                    target.tex,
+                    0,
+                );
                 const depth = thisObj.texture()
-                    .setTexData(null, 0, GL_DEPTH_COMPONENT24, w, h, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_INT)
+                    .setTexData(
+                        null, 0,
+                        GL_DEPTH_COMPONENT24,
+                        w, h,
+                        0, GL_DEPTH_COMPONENT,
+                        GL_UNSIGNED_INT,
+                    )
                     .setFilter(GL_LINEAR)
                     .setWrap();
-                gl.framebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depth.tex, 0);
+                gl.framebufferTexture2D(
+                    GL_FRAMEBUFFER,
+                    GL_DEPTH_ATTACHMENT,
+                    GL_TEXTURE_2D,
+                    depth.tex, 0,
+                );
             })
             return withTarget;
         },
