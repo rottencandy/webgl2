@@ -1,3 +1,5 @@
+import { obsEnable } from './observer';
+
 type WatchedKeys = {
     left: boolean,
     right: boolean,
@@ -96,11 +98,11 @@ export const setupKeyListener = (canvas: HTMLCanvasElement) => {
     };
 };
 
-export const inputPressCheck = () => {
+obsEnable('tick', () => {
     if (justClicked) {
         justClicked = false;
         Keys.justClicked = true;
     } else {
         Keys.justClicked = false;
     }
-};
+});
