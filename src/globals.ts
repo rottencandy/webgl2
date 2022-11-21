@@ -1,3 +1,17 @@
+/** Create element node tree with props */
+export const $ = (name: string, props: any = {}, ...children: (string | Node)[]) => {
+    const ele = document.createElement(name);
+    for (let k of props) {
+        ele[k] = props[k];
+    }
+    if (props.style) {
+        for (let k of props) {
+            ele.style[k] = props.style[k];
+        }
+    }
+    ele.append(...children);
+    return ele;
+};
 
 export const deviceScaleRatio = (width: number, height: number) =>
     Math.min(window.innerWidth / width, window.innerHeight / height);
