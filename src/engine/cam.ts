@@ -1,12 +1,4 @@
-import {
-    Matrix,
-    M4lookAt,
-    M4create,
-    M4multiply,
-    M4perspective,
-    M4clone,
-} from '../math/mat4';
-import { Vector, V3create, V3normalize, V3cross, V3add, V3multiplySc, V3set, V3scale } from '../math/vec3';
+import { mat4, vec3 } from 'gl-matrix';
 
 type CamState = {
     /**
@@ -33,11 +25,11 @@ type CamState = {
     /**
      * view-projection matrix
      */
-    eye: Vector;
-    lookDir: Vector;
-    matrix: Matrix;
-    viewMatrix: Matrix;
-    projectionMatrix: Matrix;
+    eye: vec3;
+    lookDir: vec3;
+    matrix: mat4;
+    viewMatrix: mat4;
+    projectionMatrix: mat4;
 };
 
 const MAX_PITCH = Math.PI / 2 - 0.01;
@@ -45,41 +37,41 @@ const MAX_PITCH = Math.PI / 2 - 0.01;
  * Create webgl camera
  */
 const Camera = (fov: number, zNear: number, zFar: number, aspect: number): CamState => {
-    const projectionMat = M4perspective(M4create(), fov, aspect, zNear, zFar);
-    const viewMat = M4create();
+    const projectionMat = mat4.perspective(mat4.create(), fov, aspect, zNear, zFar);
+    const viewMat = mat4.create();
 
-    const pos = V3create();
-    const up = V3create(0, 1);
-    const front = V3create(0, 0, -1);
+    const pos = vec3.create();
+    const up = vec3.set(vec3.create(), 0, 1, 0);
+    const front = vec3.set(vec3.create(), 0, 0, -1);
     // make cam initially point to z=-1
     let yaw = -Math.PI / 2,
         pitch = 0;
 
     // temporary cached variables
-    const t_move = V3create();
-    const t_side = V3create();
-    const t_dir = V3create();
-    const t_view = M4create();
-    const t_target = V3create();
+    const t_move = vec3.create();
+    const t_side = vec3.create();
+    const t_dir = vec3.create();
+    const t_view = mat4.create();
+    const t_target = vec3.create();
 
     const thisObj: CamState = {
         move(x, y, z) {
             if (z) {
-                V3multiplySc(t_move, front, z);
+                vec3.scale(t_move, front, z);
                 // reset y dir, so we always move paralell to the ground
                 // regardless of face direction
                 // t_move[1] = 0;
-                V3add(pos, pos, t_move);
+                vec3.add(pos, pos, t_move);
             }
             if (y) {
-                V3scale(t_move, up, y);
-                V3add(pos, pos, t_move);
+                vec3.scale(t_move, up, y);
+                vec3.add(pos, pos, t_move);
             }
             if (x) {
-                V3cross(t_side, up, front);
-                V3normalize(t_side, t_side);
-                V3multiplySc(t_move, t_side, x);
-                V3add(pos, pos, t_move);
+                vec3.cross(t_side, up, front);
+                vec3.normalize(t_side, t_side);
+                vec3.scale(t_move, t_side, x);
+                vec3.add(pos, pos, t_move);
             }
             return thisObj;
         },
@@ -95,24 +87,24 @@ const Camera = (fov: number, zNear: number, zFar: number, aspect: number): CamSt
             t_dir[0] = Math.cos(yaw) * cosPitch;
             t_dir[1] = Math.sin(pitch);
             t_dir[2] = Math.sin(yaw) * cosPitch;
-            V3normalize(front, t_dir);
+            vec3.normalize(front, t_dir);
             return thisObj;
         },
         moveTo(x, y, z) {
-            V3set(pos, x, y, z);
+            vec3.set(pos, x, y, z);
             return thisObj;
         },
         // TODO
         lookAt(_x, _y, _z) {
-            //V3set(target, x, y, z);
+            //vec3.set(target, x, y, z);
             return thisObj;
         },
         recalculate() {
-            M4lookAt(t_view, pos, V3add(t_target, pos, front), up);
-            M4multiply(thisObj.matrix, projectionMat, t_view);
+            mat4.lookAt(t_view, pos, vec3.add(t_target, pos, front), up);
+            mat4.mul(thisObj.matrix, projectionMat, t_view);
             return thisObj;
         },
-        matrix: M4clone(projectionMat),
+        matrix: mat4.clone(projectionMat),
         viewMatrix: viewMat,
         projectionMatrix: projectionMat,
         eye: pos,
