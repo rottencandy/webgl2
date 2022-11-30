@@ -19,7 +19,8 @@ type CamState = {
      */
     lookAt: (x: number, y: number, z: number) => CamState;
     /**
-     * recalculate transform matrix
+     * recalculate transform matrix.
+     * Run after changing any of the above methods are used.
      */
     recalculate: () => CamState;
     /**
@@ -33,11 +34,13 @@ type CamState = {
 };
 
 const MAX_PITCH = Math.PI / 2 - 0.01;
-/**
- * Create webgl camera
- */
-const Camera = (fov: number, zNear: number, zFar: number, aspect: number): CamState => {
-    const projectionMat = mat4.perspective(mat4.create(), fov, aspect, zNear, zFar);
+
+const Camera = (ortho: boolean, ...props: number[]): CamState => {
+    const projectionMat = ortho ?
+        // @ts-ignore
+        mat4.ortho(mat4.create(), ...props) :
+        // @ts-ignore
+        mat4.perspective(mat4.create(), ...props);
     const viewMat = mat4.create();
 
     const pos = vec3.create();
@@ -114,4 +117,24 @@ const Camera = (fov: number, zNear: number, zFar: number, aspect: number): CamSt
     return thisObj;
 };
 
-export default Camera;
+/**
+ * Create webgl perspective camera
+ */
+export const CameraPerspective = (
+    fov: number,
+    zNear: number,
+    zFar: number,
+    aspect: number
+) => Camera(false, fov, zNear, zFar, aspect);
+
+/**
+ * Create webgl orthographic camera
+ */
+export const CameraOrtho = (
+    left: number,
+    right: number,
+    bottom: number,
+    top: number,
+    near: number,
+    far: number,
+) => Camera(false, left, right, bottom, top, near, far);

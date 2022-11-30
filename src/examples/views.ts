@@ -1,9 +1,9 @@
-import Camera from '../engine/cam';
+import { CameraPerspective } from '../engine/cam';
 import { Keys } from '../engine/input';
 import { radians } from '../globals';
 
-export const FPSCamera = (speed = .01, x = 0, y = 0, z = 20) => {
-    const cam = Camera(radians(45), 1, 500, 400 / 300)
+export const FPSCam3D = (speed = .01, x = 0, y = 0, z = 20) => {
+    const cam = CameraPerspective(radians(45), 1, 500, 400 / 300)
         .moveTo(x, y, z);
 
     return {
@@ -26,7 +26,4 @@ export const FPSCamera = (speed = .01, x = 0, y = 0, z = 20) => {
         eye: cam.eye,
         lookDir: cam.lookDir,
     };
-};
-
-export const Camera2D = () => {
 };
