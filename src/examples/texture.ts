@@ -1,44 +1,68 @@
 import { createGLContext } from '../engine/webgl2';
-import { getById } from '../globals';
-import { vertexTex, fragmentTex } from './shaders';
+import { makeShader } from '../globals';
 import { Cube, cubeTexCoords } from '../vertices';
-import { FPSCamera } from './cameras';
+import { FPSCam3D } from './views';
 
 import img from './wood.png';
 
-const ctx = createGLContext(getById('c'));
-ctx.resize_();
-onresize = ctx.resize_;
+const ctx = createGLContext(document.getElementById('c') as any, 300, 300, true);
+(onresize = ctx.resize)();
 
-const shader = ctx.shader_(
+/**
+* Texture vertex
+*/
+const vertexTex = makeShader`
+    layout(location=0)in vec4 aPos;
+    layout(location=1)in vec2 aTex;
+    uniform mat4 uMat;
+    out vec2 vTex;
+
+    void main() {
+        gl_Position = uMat * aPos;
+        vTex = aTex;
+    }`;
+
+/**
+* Texture fragment
+*/
+const fragmentTex = makeShader`
+    in vec2 vTex;
+    uniform sampler2D uTex;
+    out vec4 outColor;
+
+    void main() {
+        outColor = texture(uTex, vTex);
+    }`;
+
+const shader = ctx.shader(
     vertexTex,
     fragmentTex,
-).use_();
+).use();
 
-const { vao_, draw_ } = ctx.createMesh_(
+const { vao, draw } = ctx.createMesh(
     Cube(10),
     // aPos
     [[0, 3, 24]]
 );
 
 // aTex
-ctx.buffer_().bind_().setData_(cubeTexCoords);
-vao_.setPtr_(1, 3);
-ctx.texture_().setImage_(img);
+ctx.buffer().bind().setData(cubeTexCoords);
+vao.setPtr(1, 2);
+ctx.texture().setImage(img);
 
-const cam = FPSCamera();
+const cam = FPSCam3D();
 
 export const update = (dt: number) => {
-    cam.update_(dt);
+    cam.update(dt);
 };
 
 export const render = () => {
-    ctx.clear_();
+    ctx.clear();
 
-    vao_.bind_();
-    shader.use_();
+    vao.bind();
+    shader.use();
 
-    shader.uniform_`uPos`.u4f_(0, 0, 0, 0);
-    shader.uniform_`uMat`.m4fv_(cam.mat_());
-    draw_();
+    shader.uniform`uPos`.u4f(0, 0, 0, 0);
+    shader.uniform`uMat`.m4fv(cam.mat());
+    draw();
 };

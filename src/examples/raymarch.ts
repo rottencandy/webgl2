@@ -1,12 +1,33 @@
 import { createGLContext } from '../engine/webgl2';
-import { getById } from '../globals';
-import { fragmentStatic, vertexPos } from './shaders';
 import { Cube } from '../vertices';
-import { FPSCamera } from './cameras';
+import { FPSCam3D } from './views';
+import { makeShader } from '../globals';
 
-const ctx = createGLContext(getById('c'));
-ctx.resize_();
-onresize = ctx.resize_;
+const ctx = createGLContext(document.getElementById('c') as any, 300, 300, true);
+(onresize = ctx.resize)();
+
+/**
+* Calculates vertices
+*/
+const vertexPos = makeShader`
+    layout(location=0)in vec4 aPos;
+    uniform mat4 uMat;
+    uniform vec4 uPos;
+
+    void main() {
+        gl_Position = uMat * (uPos + aPos);
+    }`;
+
+/**
+* Static light color
+*/
+const fragmentStatic = makeShader`
+    uniform vec3 uColor;
+    out vec4 outColor;
+
+    void main() {
+        outColor = vec4(uColor, 1.);
+    }`;
 
 const frag = `#version 300 es
 precision lowp float;
@@ -64,7 +85,7 @@ void main() {
 }
 `;
 
-const shader = ctx.shader_(
+const shader = ctx.shader(
     `#version 300 es
     precision lowp float;
     layout(location=0)in vec4 aPos;
@@ -84,49 +105,49 @@ const shader = ctx.shader_(
         hitPos = aPos.xyz;
     }`,
     frag,
-).use_();
+).use();
 
 // main cube
-const { vao_, draw_ } = ctx.createMesh_(
+const { vao, draw } = ctx.createMesh(
     Cube(10),
     [ [0, 3, 24]]
 );
 
 // light cube
-const lightSh = ctx.shader_(
+const lightSh = ctx.shader(
     vertexPos,
     fragmentStatic
-).use_();
-const { vao_: lightVao, draw_: drawLight } = ctx.createMesh_(
+).use();
+const { vao: lightVao, draw: drawLight } = ctx.createMesh(
     Cube(3),
     [
         [0, 3, 24],
     ]
 );
 
-const cam = FPSCamera();
+const cam = FPSCam3D();
 
 export const update = (dt: number) => {
-    cam.update_(dt);
+    cam.update(dt);
 };
 
 export const render = () => {
-    ctx.clear_();
-    const mat = cam.mat_();
+    ctx.clear();
+    const mat = cam.mat();
 
     // draw main cube
-    vao_.bind_();
-    shader.use_();
-    shader.uniform_`uPos`.u4f_(0, 0, 0, 0);
-    shader.uniform_`uMat`.m4fv_(mat);
-    shader.uniform_`uCam`.u3f_(cam.eye_[0], cam.eye_[1], cam.eye_[2]);
-    draw_();
+    vao.bind();
+    shader.use();
+    shader.uniform`uPos`.u4f(0, 0, 0, 0);
+    shader.uniform`uMat`.m4fv(mat);
+    shader.uniform`uCam`.u3f(cam.eye[0], cam.eye[1], cam.eye[2]);
+    draw();
 
     // draw light cube
-    lightVao.bind_();
-    lightSh.use_();
-    lightSh.uniform_`uMat`.m4fv_(mat);
-    lightSh.uniform_`uColor`.u3f_(1, 1, 1);
-    lightSh.uniform_`uPos`.u4f_(20, 20, 20, 0);
+    lightVao.bind();
+    lightSh.use();
+    lightSh.uniform`uMat`.m4fv(mat);
+    lightSh.uniform`uColor`.u3f(1, 1, 1);
+    lightSh.uniform`uPos`.u4f(20, 20, 20, 0);
     drawLight();
 };

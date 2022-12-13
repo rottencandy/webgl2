@@ -1,11 +1,9 @@
 import { createGLContext } from '../engine/webgl2';
-import { getById } from '../globals';
 import { Plane } from '../vertices';
-import { FPSCamera } from './cameras';
+import { FPSCam3D } from './views';
 
-const ctx = createGLContext(getById('c'));
-ctx.resize_();
-onresize = ctx.resize_;
+const ctx = createGLContext(document.getElementById('c') as any);
+(onresize = ctx.resize)();
 
 const frag = `#version 300 es
 precision lowp float;
@@ -109,7 +107,7 @@ void main() {
 }
 `;
 
-const shader = ctx.shader_(
+const shader = ctx.shader(
     `#version 300 es
     precision lowp float;
     layout(location=0)in vec2 aPos;
@@ -136,25 +134,25 @@ const shader = ctx.shader_(
         vUV = vwPos;
     }`,
     frag,
-).use_();
-shader.use_().uniform_`aspect`.u1f_(400 / 300);
+).use();
+shader.use().uniform`aspect`.u1f(400 / 300);
 
-const { draw_ } = ctx.createMesh_(
+const { draw } = ctx.createMesh(
     Plane(2),
-    [[0, 3, 24]]
+    [[0, 2]]
 );
 
-const cam = FPSCamera();
+const cam = FPSCam3D();
 
 export const update = (dt: number) => {
-    cam.update_(dt);
+    cam.update(dt);
 };
 
 //let iTime = 0;
 export const render = () => {
-    ctx.clear_();
-    //shader.uniform_`iTime`.u1f_(iTime+=.01);
-    shader.uniform_`uCamPos`.u3f_(cam.eye_[0], cam.eye_[1], cam.eye_[2]);
-    shader.uniform_`uLookDir`.u3f_(cam.lookDir_[0], cam.lookDir_[1], cam.lookDir_[2]);
-    draw_();
+    ctx.clear();
+    //shader.uniform`iTime`.u1f(iTime+=.01);
+    shader.uniform`uCamPos`.u3f(cam.eye[0], cam.eye[1], cam.eye[2]);
+    shader.uniform`uLookDir`.u3f(cam.lookDir[0], cam.lookDir[1], cam.lookDir[2]);
+    draw();
 };

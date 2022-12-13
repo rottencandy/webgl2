@@ -1,10 +1,8 @@
 import { createGLContext } from '../engine/webgl2';
-import { getById } from '../globals';
 import { Plane } from '../vertices';
 
-const ctx = createGLContext(getById('c'));
-ctx.resize_();
-onresize = ctx.resize_;
+const ctx = createGLContext(document.getElementById('c') as any);
+(onresize = ctx.resize)();
 
 const frag = `#version 300 es
 precision lowp float;
@@ -19,7 +17,7 @@ void main() {
 }
 `;
 
-const shader = ctx.shader_(
+const shader = ctx.shader(
     `#version 300 es
     precision lowp float;
     layout(location=0)in vec2 aPos;
@@ -34,19 +32,19 @@ const shader = ctx.shader_(
         vFragCoord = vec2(vwPos.x * aspect, vwPos.y);
     }`,
     frag,
-).use_();
-shader.use_().uniform_`aspect`.u1f_(400 / 300);
+).use();
+shader.use().uniform`aspect`.u1f(400 / 300);
 
-const { draw_ } = ctx.createMesh_(
+const { draw } = ctx.createMesh(
     Plane(2),
-    [[0, 3, 24]]
+    [[0, 2]]
 );
 
 export const update = () => {};
 
 let iTime = 0;
 export const render = () => {
-    shader.uniform_`iTime`.u1f_(iTime+=.01);
-    ctx.clear_();
-    draw_();
+    shader.uniform`iTime`.u1f(iTime+=.01);
+    ctx.clear();
+    draw();
 };

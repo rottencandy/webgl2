@@ -1,21 +1,19 @@
 import { createGLContext } from '../engine/webgl2';
-import { getById } from '../globals';
 import { Plane } from '../vertices';
-import { FPSCamera } from './cameras';
+import { FPSCam3D } from './views';
 
-const cam = FPSCamera(.01, 5, 3, 5);
+const cam = FPSCam3D(.01, 5, 3, 5);
 
-const ctx = createGLContext(getById('c'), 300, 300);
-ctx.resize_();
-onresize = ctx.resize_;
+const ctx = createGLContext(document.getElementById('c') as any, 300, 300);
+(onresize = ctx.resize)();
 
-const { draw_, vao_ } = ctx.createMesh_(
+const { draw, vao } = ctx.createMesh(
     Plane(2),
-    [[0, 3, 24]]
+    [[0, 2]]
 );
-vao_.setPtr_(1, 2);
+vao.setPtr(1, 2);
 
-const runShader = ctx.shader_(
+const runShader = ctx.shader(
     `#version 300 es
     precision lowp float;
     layout(location=0)in vec2 aPos;
@@ -101,7 +99,7 @@ const runShader = ctx.shader_(
         fragColor = vec4(col, 1.);
     }
     `);
-runShader.use_().uniform_`aspect`.u1f_(300 / 300);
+runShader.use().uniform`aspect`.u1f(300 / 300);
 
 const initVert = `#version 300 es
 precision lowp float;
@@ -145,45 +143,45 @@ void main() {
     float posY = mod(vPos.y, D);
     float posZ = (vPos.x / D) + (vPos.y / D) * (S / D);`;
 
-const initDistShader = ctx.shader_(
+const initDistShader = ctx.shader(
     initVert,
     `${initFragBase}outDist = vec4(Dist(vec3(posX, posY, posZ)) / D, 0, 0, 1); }`,
 );
 
-const initNormShader = ctx.shader_(
+const initNormShader = ctx.shader(
     initVert,
     `${initFragBase}outDist = vec4(Norm(vec3(posX, posY, posZ)) * .5 + .5, 1); }`,
 );
 
 // uDistTex
-const distTex = ctx.texture_();
-const forDist = ctx.renderTargetContext_(distTex, 64, 64);
+const distTex = ctx.texture();
+const forDist = ctx.renderTargetContext(distTex, 64, 64);
 forDist(() => {
-    ctx.clear_();
-    initDistShader.use_();
-    draw_();
+    ctx.clear();
+    initDistShader.use();
+    draw();
 });
 
 // uNormTex
-const normTex = ctx.texture_();
-const forNorm = ctx.renderTargetContext_(normTex, 64, 64);
+const normTex = ctx.texture();
+const forNorm = ctx.renderTargetContext(normTex, 64, 64);
 forNorm(() => {
-    ctx.clear_();
-    initNormShader.use_();
-    draw_();
+    ctx.clear();
+    initNormShader.use();
+    draw();
 });
 
-runShader.use_();
-distTex.setUnit_(runShader.uniform_`uDistTex`.loc_, 0);
-normTex.setUnit_(runShader.uniform_`uNormTex`.loc_, 1);
+runShader.use();
+distTex.setUnit(runShader.uniform`uDistTex`.loc, 0);
+normTex.setUnit(runShader.uniform`uNormTex`.loc, 1);
 
 export const update = (dt: number) => {
-    cam.update_(dt);
+    cam.update(dt);
 };
 
 export const render = () => {
-    ctx.clear_();
-    runShader.uniform_`uCamPos`.u3f_(cam.eye_[0], cam.eye_[1], cam.eye_[2]);
-    runShader.uniform_`uLookDir`.u3f_(cam.lookDir_[0], cam.lookDir_[1], cam.lookDir_[2]);
-    draw_();
+    ctx.clear();
+    runShader.uniform`uCamPos`.u3f(cam.eye[0], cam.eye[1], cam.eye[2]);
+    runShader.uniform`uLookDir`.u3f(cam.lookDir[0], cam.lookDir[1], cam.lookDir[2]);
+    draw();
 };

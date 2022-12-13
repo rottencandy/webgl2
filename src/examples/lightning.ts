@@ -1,19 +1,98 @@
 import { createGLContext } from '../engine/webgl2';
-import { getById } from '../globals';
-import { vertexNormalFrag, fragmentPhong, vertexPos, fragmentStatic } from './shaders';
+import { makeShader } from '../globals';
 import { Cube } from '../vertices';
-import { FPSCamera } from './cameras';
+import { FPSCam3D } from './views';
 
-const ctx = createGLContext(getById('c'));
-ctx.resize_();
-onresize = ctx.resize_;
+const ctx = createGLContext(document.getElementById('c') as any, 300, 300, true);
+(onresize = ctx.resize)();
 
-const shader = ctx.shader_(
+/**
+* Calculates transformed vertices and provides
+* normals and interpolated fragment positions.
+*/
+const vertexNormalFrag = makeShader`
+    layout(location=0)in vec4 aPos;
+    layout(location=1)in vec4 aNorm;
+    uniform mat4 uMat;
+    uniform vec4 uPos;
+    out vec3 vNormal, vFragPos;
+
+    void main() {
+        gl_Position = uMat * (uPos + aPos);
+        vFragPos = aPos.xyz;
+        vNormal = aNorm.xyz;
+    }`;
+
+/**
+* Calculates vertices
+*/
+const vertexPos = makeShader`
+    layout(location=0)in vec4 aPos;
+    uniform mat4 uMat;
+    uniform vec4 uPos;
+
+    void main() {
+        gl_Position = uMat * (uPos + aPos);
+    }`;
+
+/**
+* Static light color
+*/
+const fragmentStatic = makeShader`
+    uniform vec3 uColor;
+    out vec4 outColor;
+
+    void main() {
+        outColor = vec4(uColor, 1.);
+    }`;
+
+/**
+* Calculates fragment lights using Phong lighting (ambient+diffuse+spectacular)
+* source: learnopengl.com
+*/
+const fragmentPhong = makeShader`
+    in vec3 vNormal, vFragPos;
+    uniform vec3 uColor, uLightPos, uCam;
+    out vec4 outColor;
+
+    void main() {
+        // variables
+        vec3 lightColor = vec3(1.);
+        vec3 ambientStr = vec3(.1);
+        vec3 diffStr = vec3(1.);
+        vec3 spectacularStr = vec3(.5);
+        float shininess = 8.;
+
+        // ambient
+        vec3 ambient = ambientStr * lightColor;
+
+        // diffuse
+        vec3 norm = normalize(vNormal);
+        vec3 lightDir = normalize(uLightPos - vFragPos);
+        float diff = max(dot(norm, lightDir), 0.);
+        vec3 diffuse = lightColor * (diff * diffStr);
+
+        // spectacular
+        vec3 viewDir = normalize(uCam - vFragPos);
+
+        // For blinn-phong
+        //vec3 halfwayDir = normalize(lightDir + viewDir);
+        //float spec = pow(max(dot(viewDir, halfwayDir), 0.), 16.);
+        vec3 reflectDir = reflect(-lightDir, norm);
+        float spec = pow(max(dot(viewDir, reflectDir), 0.), shininess);
+
+        vec3 spectacular = lightColor * (spec * spectacularStr);
+
+        vec3 result = (ambient + diffuse + spectacular) * uColor;
+        outColor = vec4(result, 1.);
+    }`;
+
+const shader = ctx.shader(
     vertexNormalFrag,
     fragmentPhong
-).use_();
+).use();
 
-const { vao_, draw_ } = ctx.createMesh_(
+const { vao, draw } = ctx.createMesh(
     Cube(10),
     [
         // aPos
@@ -23,43 +102,43 @@ const { vao_, draw_ } = ctx.createMesh_(
     ]
 );
 
-const lightSh = ctx.shader_(
+const lightSh = ctx.shader(
     vertexPos,
     fragmentStatic
-).use_();
+).use();
 
-const { vao_: lightVao, draw_: drawLight } = ctx.createMesh_(
+const { vao: lightVao, draw: drawLight } = ctx.createMesh(
     Cube(3),
     [
         [0, 3, 24],
     ]
 );
 
-const cam = FPSCamera();
+const cam = FPSCam3D();
 
 export const update = (dt: number) => {
-    cam.update_(dt);
+    cam.update(dt);
 };
 
 export const render = () => {
-    ctx.clear_();
-    const mat = cam.mat_();
+    ctx.clear();
+    const mat = cam.mat();
 
-    vao_.bind_();
-    shader.use_();
+    vao.bind();
+    shader.use();
 
-    shader.uniform_`uPos`.u4f_(0, 0, 0, 0);
-    shader.uniform_`uMat`.m4fv_(mat);
-    shader.uniform_`uCam`.u3f_(cam.eye_[0], cam.eye_[1], cam.eye_[2]);
-    shader.uniform_`uLightPos`.u3f_(20, 20, 20);
-    shader.uniform_`uColor`.u3f_(.2, .7, .5);
-    draw_();
+    shader.uniform`uPos`.u4f(0, 0, 0, 0);
+    shader.uniform`uMat`.m4fv(mat);
+    shader.uniform`uCam`.u3f(cam.eye[0], cam.eye[1], cam.eye[2]);
+    shader.uniform`uLightPos`.u3f(20, 20, 20);
+    shader.uniform`uColor`.u3f(.2, .7, .5);
+    draw();
 
-    lightVao.bind_();
-    lightSh.use_();
+    lightVao.bind();
+    lightSh.use();
 
-    lightSh.uniform_`uMat`.m4fv_(mat);
-    lightSh.uniform_`uColor`.u3f_(1, 1, 1);
-    lightSh.uniform_`uPos`.u4f_(20, 20, 20, 0);
+    lightSh.uniform`uMat`.m4fv(mat);
+    lightSh.uniform`uColor`.u3f(1, 1, 1);
+    lightSh.uniform`uPos`.u4f(20, 20, 20, 0);
     drawLight();
 };

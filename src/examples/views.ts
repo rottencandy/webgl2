@@ -1,8 +1,9 @@
-import { CameraPerspective } from '../engine/cam';
+import { CameraOrtho, CameraPerspective } from '../engine/cam';
 import { Keys } from '../engine/input';
 import { radians } from '../globals';
 
 export const FPSCam3D = (speed = .01, x = 0, y = 0, z = 20) => {
+    // TODO: use aspect ratio from caller
     const cam = CameraPerspective(radians(45), 1, 500, 400 / 300)
         .moveTo(x, y, z);
 
@@ -17,13 +18,27 @@ export const FPSCam3D = (speed = .01, x = 0, y = 0, z = 20) => {
             cam.move(lt + rt, 0, fd + bk);
 
             if (Keys.pointerLocked) {
-                cam.rotate(Keys.ptrY / 1e3, Keys.ptrX / 1e3);
-                // TODO: do this at the end of the update step
-                Keys.ptrX = Keys.ptrY = 0;
+                cam.rotate(Keys.ptrRelativeOffsetY, Keys.ptrRelativeOffsetX);
             }
         },
         mat: () => cam.recalculate().matrix,
         eye: cam.eye,
         lookDir: cam.lookDir,
+    };
+};
+
+export const OrthoCam3D = () => {
+    // TODO
+};
+
+export const Cam2D = (width: number, height: number, x = 0, y = 0) => {
+    const cam = CameraOrtho(x, width, height, y, -1, 1)
+        .moveTo(x, y, 0);
+
+    return {
+        move: (x: number, y: number) => {
+            cam.move(x, y, 0);
+        },
+        mat: () => cam.recalculate().matrix,
     };
 };
