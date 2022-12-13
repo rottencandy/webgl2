@@ -41,3 +41,6 @@ export const AABB = (
     );
 };
 
+export const makeShader = (content: TemplateStringsArray) => `#version 300 es
+precision lowp float;
+${content}`;
