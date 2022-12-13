@@ -125,7 +125,7 @@ const { vao: lightVao, draw: drawLight } = ctx.createMesh(
     ]
 );
 
-const cam = FPSCam3D();
+const cam = FPSCam3D(.01, 0, 0, 20, 1);
 
 export const update = (dt: number) => {
     cam.update(dt);

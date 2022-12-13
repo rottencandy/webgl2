@@ -2,9 +2,9 @@ import { createGLContext } from '../engine/webgl2';
 import { Plane } from '../vertices';
 import { FPSCam3D } from './utils/views';
 
-const cam = FPSCam3D(.01, 5, 3, 5);
+const cam = FPSCam3D(.01, 5, 3, 5, 1);
 
-const ctx = createGLContext(document.getElementById('c') as any, 300, 300);
+const ctx = createGLContext(document.getElementById('c') as any, 300, 300, true);
 (onresize = ctx.resize)();
 
 const { draw, vao } = ctx.createMesh(

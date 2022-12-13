@@ -1,10 +1,10 @@
-import { CameraOrtho, CameraPerspective } from '../engine/cam';
-import { Keys } from '../engine/input';
-import { radians } from '../globals';
+import { CameraOrtho, CameraPerspective } from '../../engine/cam';
+import { Keys } from '../../engine/input';
+import { radians } from '../../globals';
 
-export const FPSCam3D = (speed = .01, x = 0, y = 0, z = 20) => {
+export const FPSCam3D = (speed = .01, x = 0, y = 0, z = 20, aspect = 400 / 300) => {
     // TODO: use aspect ratio from caller
-    const cam = CameraPerspective(radians(45), 1, 500, 400 / 300)
+    const cam = CameraPerspective(radians(45), 1, 500, aspect)
         .moveTo(x, y, z);
 
     return {

@@ -53,7 +53,7 @@ const tx = ctx.texture().setImage(img);
 const target = ctx.texture();
 const withTarget = ctx.renderTargetContext(target);
 
-const cam = FPSCam3D();
+const cam = FPSCam3D(.01, 0, 0, 20, 1);
 
 export const update = (dt: number) => {
     cam.update(dt);

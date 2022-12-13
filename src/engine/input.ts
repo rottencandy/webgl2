@@ -43,7 +43,6 @@ let justClicked = false;
  * Initialize onkey listeners
 */
 export const setupKeyListener = (canvas: HTMLCanvasElement, lockPointer: boolean) => {
-    // TODO: use keycode here?
     const setKeyState = (value: boolean) => ({ key: code }) => {
         switch (code) {
             case 'ArrowUp':

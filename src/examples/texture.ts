@@ -50,7 +50,7 @@ ctx.buffer().bind().setData(cubeTexCoords);
 vao.setPtr(1, 2);
 ctx.texture().setImage(img);
 
-const cam = FPSCam3D();
+const cam = FPSCam3D(.01, 0, 0, 20, 1);
 
 export const update = (dt: number) => {
     cam.update(dt);

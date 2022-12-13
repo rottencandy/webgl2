@@ -49,7 +49,7 @@ vao.setPtr(1, 2);
 ctx.texture().bind()
     .setTexData(new Uint8Array([128, 64, 128, 0, 192, 0])).setFilter().setWrap();
 
-const cam = FPSCam3D();
+const cam = FPSCam3D(.01, 0, 0, 20, 1);
 
 export const update = (dt: number) => {
     cam.update(dt);
