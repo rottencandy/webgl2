@@ -18,7 +18,7 @@
   },
   "devDependencies": {
     "@types/gl-matrix": "^3.2.0",
-    "esbuild": "^0.15.15",
+    "esbuild": "^0.16.4",
     "esbuild-plugin-spglsl": "^0.0.3",
     "html-inline": "^1.2.0",
     "roadroller": "^2.1.0",
