@@ -60,7 +60,7 @@ const uniformSetterFns = (
     gl: WebGL2RenderingContext,
     prg: WebGLProgram
 ) => (name: TemplateStringsArray) => {
-    const loc = gl.getUniformLocation(prg, name as unknown as string);
+    const loc = gl.getUniformLocation(prg, name as unknown as string) as WebGLUniformLocation;
 
     return {
         loc,
@@ -146,7 +146,7 @@ const createVAOFns = (gl: WebGL2RenderingContext) => (): VAOState => {
             type = GL_FLOAT,
             normalize = false
         ) {
-            this.bind_();
+            thisObj.bind();
             gl.enableVertexAttribArray(loc);
             gl.vertexAttribPointer(loc, size, type, normalize, stride, offset);
             return thisObj;
@@ -169,7 +169,7 @@ const createBufferFns = (gl: WebGL2RenderingContext) =>
             buf,
             bind() { gl.bindBuffer(target, buf); return thisObj; },
             setData(data) {
-                this.bind_();
+                thisObj.bind();
                 gl.bufferData(target, data, mode);
                 return thisObj;
             },
@@ -316,11 +316,17 @@ const createElementBufferFns = (gl: WebGL2RenderingContext) => (
 };
 
 type AttribPointers = [
+    /* Location in which data is sent to vertex shader */
     loc: number,
+    /* Points per vertex */
     size: number,
+    /* Points to skip at the end of each vertex, 0 = size * sizeof(type) */
     stride?: number,
+    /* Points to skip at the beginning of each vertex */
     offset?: number,
+    /* Data type, default: GL_FLOAT */
     type?: number,
+    /* Default: false */
     normalize?: boolean,
 ];
 
@@ -388,7 +394,8 @@ type WebglState = {
 export const createGLContext = (
     canvas: HTMLCanvasElement,
     width = 400,
-    height = 300
+    height = 300,
+    lockPointer = false,
 ): WebglState => {
     const gl = canvas.getContext('webgl2') as WebGL2RenderingContext;
     if (!gl) {
@@ -407,7 +414,7 @@ export const createGLContext = (
     // For pre-multiplied alpha textures
     //gl.blendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
     gl.clearDepth(1.);
-    setupKeyListener(canvas);
+    setupKeyListener(canvas, lockPointer);
 
     const thisObj: WebglState = {
         gl,
