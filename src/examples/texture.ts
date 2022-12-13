@@ -1,9 +1,9 @@
 import { createGLContext } from '../engine/webgl2';
 import { makeShader } from '../globals';
 import { Cube, cubeTexCoords } from '../vertices';
-import { FPSCam3D } from './views';
+import { FPSCam3D } from './utils/views';
 
-import img from './wood.png';
+import img from './assets/wood.png';
 
 const ctx = createGLContext(document.getElementById('c') as any, 300, 300, true);
 (onresize = ctx.resize)();

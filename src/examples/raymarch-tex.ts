@@ -1,6 +1,6 @@
 import { createGLContext } from '../engine/webgl2';
 import { Plane } from '../vertices';
-import { FPSCam3D } from './views';
+import { FPSCam3D } from './utils/views';
 
 const cam = FPSCam3D(.01, 5, 3, 5);
 
