@@ -51,7 +51,7 @@ vao.setPtr(1, 2);
 const tx = ctx.texture().setImage(img);
 
 const target = ctx.texture();
-const withTarget = ctx.renderTargetContext(target);
+const renderTarget = ctx.renderTargetContext(target);
 
 const cam = FPSCam3D(.01, 0, 0, 20, 1);
 
@@ -66,14 +66,14 @@ export const render = () => {
 
     shader.uniform`uPos`.u4f(0, 0, 0, 0);
 
-    withTarget(() => {
+    renderTarget.enable();
         ctx.clear();
 
         shader.uniform`uMat`.m4fv(initCam);
 
         tx.bind();
         draw();
-    });
+    renderTarget.disable();
 
     ctx.clear();
 

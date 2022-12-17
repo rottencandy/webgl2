@@ -379,8 +379,8 @@ type WebglState = {
     };
     /**
     * Create a new target texture to render to.
-    * Returns a decorator function that renders to the texture when
-    * any draw calls are made inside it.
+    * Returns an object of methods that can enable or disable rendering
+    * to the texture.
     */
     renderTargetContext: (
         tex: TextureState,
@@ -388,7 +388,7 @@ type WebglState = {
         height?: number,
         internalFormat?: number,
         format?: number,
-    ) => (fn: () => void) => void;
+    ) => { enable: () => void, disable: () => void };
 };
 
 export const createGLContext = (
@@ -469,41 +469,43 @@ export const createGLContext = (
                 gl.bindFramebuffer(GL_FRAMEBUFFER, target);
             const setViewport = (w: number, h: number) =>
                 gl.viewport(0, 0, w, h);
-            const withTarget = (ctxFn: () => void) => {
-                bindFn(fb);
-                setViewport(w, h);
-                ctxFn();
-
-                setViewport(width, height);
-                bindFn(null);
+            const targetCtx = {
+                enable() {
+                    bindFn(fb);
+                    setViewport(w, h);
+                },
+                disable() {
+                    setViewport(width, height);
+                    bindFn(null);
+                },
             };
             // setup depth texture
-            withTarget(() => {
-                gl.framebufferTexture2D(
-                    GL_FRAMEBUFFER,
-                    GL_COLOR_ATTACHMENT0,
-                    GL_TEXTURE_2D,
-                    target.tex,
-                    0,
-                );
-                const depth = thisObj.texture()
-                    .setTexData(
-                        null, 0,
-                        GL_DEPTH_COMPONENT24,
-                        w, h,
-                        0, GL_DEPTH_COMPONENT,
-                        GL_UNSIGNED_INT,
-                    )
-                    .setFilter(GL_LINEAR)
-                    .setWrap();
-                gl.framebufferTexture2D(
-                    GL_FRAMEBUFFER,
-                    GL_DEPTH_ATTACHMENT,
-                    GL_TEXTURE_2D,
-                    depth.tex, 0,
-                );
-            })
-            return withTarget;
+            targetCtx.enable();
+            gl.framebufferTexture2D(
+                GL_FRAMEBUFFER,
+                GL_COLOR_ATTACHMENT0,
+                GL_TEXTURE_2D,
+                target.tex,
+                0,
+            );
+            const depth = thisObj.texture()
+                .setTexData(
+                    null, 0,
+                    GL_DEPTH_COMPONENT24,
+                    w, h,
+                    0, GL_DEPTH_COMPONENT,
+                    GL_UNSIGNED_INT,
+                )
+                .setFilter(GL_LINEAR)
+                .setWrap();
+            gl.framebufferTexture2D(
+                GL_FRAMEBUFFER,
+                GL_DEPTH_ATTACHMENT,
+                GL_TEXTURE_2D,
+                depth.tex, 0,
+            );
+            targetCtx.disable();
+            return targetCtx;
         },
     };
 
