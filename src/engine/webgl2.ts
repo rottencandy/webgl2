@@ -40,11 +40,6 @@ import {
 import { deviceScaleRatio } from '../globals';
 import { setupKeyListener } from './input';
 
-const clearFn = (gl: WebGL2RenderingContext) => () => {
-    gl.clearColor(.1, .1, .1, 1.);
-    gl.clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-};
-
 const createShader = (
     gl: WebGL2RenderingContext,
     type: number,
@@ -90,32 +85,6 @@ type ShaderState = {
     attribLoc: (name: string) => number;
 };
 
-const createShaderFns = (gl: WebGL2RenderingContext) => (
-    vSource: string,
-    fSource: string,
-): ShaderState => {
-    const prg = gl.createProgram() as WebGLProgram;
-    gl.attachShader(prg, createShader(gl, GL_VERTEX_SHADER, vSource));
-    gl.attachShader(prg, createShader(gl, GL_FRAGMENT_SHADER, fSource));
-    gl.linkProgram(prg);
-
-    if (!gl.getProgramParameter(prg, GL_LINK_STATUS)) {
-        alert('Program Link failed: ' + gl.getProgramInfoLog(prg));
-        //console.error('vs log: ', gl.getShaderInfoLog(vShader));
-        //console.error('fs log: ', gl.getShaderInfoLog(fShader));
-        //throw new Error;
-    }
-
-    const thisObj: ShaderState = {
-        prg,
-        uniform: uniformSetterFns(gl, prg),
-        use() { gl.useProgram(prg); return thisObj; },
-        attribLoc: (name) => gl.getAttribLocation(prg, name),
-    };
-
-    return thisObj;
-};
-
 type VAOState = {
     vao: WebGLVertexArrayObject;
     bind: () => VAOState;
@@ -130,51 +99,11 @@ type VAOState = {
     ) => VAOState;
 };
 
-const createVAOFns = (gl: WebGL2RenderingContext) => (): VAOState => {
-    const vao = gl.createVertexArray() as WebGLVertexArrayObject;
-    const thisObj: VAOState = {
-        vao,
-        bind() {
-            gl.bindVertexArray(vao);
-            return thisObj;
-        },
-        setPtr(
-            loc,
-            size,
-            stride = 0,
-            offset = 0,
-            type = GL_FLOAT,
-            normalize = false
-        ) {
-            thisObj.bind();
-            gl.enableVertexAttribArray(loc);
-            gl.vertexAttribPointer(loc, size, type, normalize, stride, offset);
-            return thisObj;
-        },
-    };
-    return thisObj.bind();
-};
-
 type BufferState = {
     buf: WebGLBuffer;
     bind: () => BufferState;
     /* binds buffer automatically */
     setData: (data: BufferSource) => BufferState;
-};
-
-const createBufferFns = (gl: WebGL2RenderingContext) =>
-    (target = GL_ARRAY_BUFFER, mode = GL_STATIC_DRAW): BufferState => {
-        const buf = gl.createBuffer() as WebGLBuffer;
-        const thisObj: BufferState = {
-            buf,
-            bind() { gl.bindBuffer(target, buf); return thisObj; },
-            setData(data) {
-                thisObj.bind();
-                gl.bufferData(target, data, mode);
-                return thisObj;
-            },
-        };
-        return thisObj.bind();
 };
 
 type TextureState = {
@@ -214,105 +143,11 @@ type TextureState = {
 };
 
 
-const createTextureFns = (gl: WebGL2RenderingContext) => (
-    target = GL_TEXTURE_2D
-) => {
-    const tex = gl.createTexture() as WebGLTexture;
-    const setParam = (key: number, val: number) =>
-        gl.texParameteri(target, key, val);
-    const thisObj: TextureState = {
-        tex,
-        bind() { gl.bindTexture(target, tex); return thisObj; },
-        // TODO find out if filter is mandatory (use gl_nearest always)
-        setFilter(type = GL_NEAREST) {
-            setParam(GL_TEXTURE_MIN_FILTER, type);
-            setParam(GL_TEXTURE_MAG_FILTER, type);
-            return thisObj;
-        },
-        setWrap(type = GL_CLAMP_TO_EDGE) {
-            setParam(GL_TEXTURE_WRAP_S, type);
-            setParam(GL_TEXTURE_WRAP_T, type);
-            return thisObj;
-        },
-        setTexImage2D(src) {
-            thisObj.bind();
-            gl.texImage2D(target, 0, GL_RGBA, GL_RGBA, GL_UNSIGNED_BYTE, src);
-            gl.generateMipmap(target);
-            return thisObj;
-        },
-        // TODO: Turn this into async
-        setImage(imgSrc) {
-            const img = new Image;
-            img.src = imgSrc;
-            img.onload = () => {
-                thisObj.setTexImage2D(img);
-            };
-            return thisObj;
-        },
-        setTexData(
-            data,
-            level = 0,
-            internalFormat = GL_R8,
-            width = 2,
-            height = 2,
-            border = 0,
-            format = GL_RED,
-            type = GL_UNSIGNED_BYTE,
-            alignment = 1,
-        ) {
-            thisObj.bind();
-            gl.pixelStorei(GL_UNPACK_ALIGNMENT, alignment);
-            gl.texImage2D(
-                target,
-                level,
-                internalFormat,
-                width,
-                height,
-                border,
-                format,
-                type,
-                data,
-            );
-            return thisObj;
-        },
-        setUnit(loc, unit) {
-            gl.uniform1i(loc, unit);
-            gl.activeTexture(GL_TEXTURE0 + unit);
-            thisObj.bind();
-            return thisObj;
-        }
-    };
-    // set a temporary blue texture
-    thisObj.setTexData(
-        new Uint8Array([0, 0, 255, 255]),
-        0, GL_RGBA,
-        1, 1, 0,
-        GL_RGBA,
-        GL_UNSIGNED_BYTE
-    );
-    return thisObj;
-};
-
 type EBState = {
     buf: WebGLBuffer;
     bind: () => EBState;
     /* automatically binds EB */
-    setIndices: (data: number[]) => EBState;
-};
-
-const createElementBufferFns = (gl: WebGL2RenderingContext) => (
-    mode = GL_STATIC_DRAW,
-): EBState => {
-    const plainBuf = createBufferFns(gl)(GL_ELEMENT_ARRAY_BUFFER, mode);
-    const thisObj: EBState = {
-        buf: plainBuf.buf,
-        bind() { plainBuf.bind(); return thisObj; },
-        setIndices(data) {
-            plainBuf.setData(new Uint16Array(data));
-            return thisObj;
-        },
-    };
-    return thisObj.bind();
+    setData: (data: number[]) => EBState;
 };
 
 type AttribPointers = [
@@ -398,9 +233,8 @@ export const createGLContext = (
     lockPointer = false,
 ): WebglState => {
     const gl = canvas.getContext('webgl2') as WebGL2RenderingContext;
-    if (!gl) {
+    if (!gl)
         alert('Could not get gl context');
-    };
 
     canvas.width = width;
     canvas.height = height;
@@ -416,29 +250,182 @@ export const createGLContext = (
     gl.clearDepth(1.);
     setupKeyListener(canvas, lockPointer);
 
-    const thisObj: WebglState = {
+    const thisStateObj: WebglState = {
         gl,
-        clear: clearFn(gl),
-        shader: createShaderFns(gl),
-        buffer: createBufferFns(gl),
-        texture: createTextureFns(gl),
-        elementBuffer: createElementBufferFns(gl),
-        VAO: createVAOFns(gl),
+
+        clear() {
+            gl.clearColor(.1, .1, .1, 1.);
+            gl.clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        },
+
+        shader(vSource: string, fSource: string) {
+            const prg = gl.createProgram() as WebGLProgram;
+            gl.attachShader(prg, createShader(gl, GL_VERTEX_SHADER, vSource));
+            gl.attachShader(prg, createShader(gl, GL_FRAGMENT_SHADER, fSource));
+            gl.linkProgram(prg);
+
+            if (!gl.getProgramParameter(prg, GL_LINK_STATUS)) {
+                alert('Program Link failed: ' + gl.getProgramInfoLog(prg));
+                //console.error('vs log: ', gl.getShaderInfoLog(vShader));
+                //console.error('fs log: ', gl.getShaderInfoLog(fShader));
+                //throw new Error;
+            }
+
+            const thisObj: ShaderState = {
+                prg,
+                uniform: uniformSetterFns(gl, prg),
+                use() { gl.useProgram(prg); return thisObj; },
+                attribLoc: (name) => gl.getAttribLocation(prg, name),
+            };
+
+            return thisObj;
+        },
+
+        buffer(target = GL_ARRAY_BUFFER, mode = GL_STATIC_DRAW) {
+            const buf = gl.createBuffer() as WebGLBuffer;
+            const thisObj: BufferState = {
+                buf,
+                bind() { gl.bindBuffer(target, buf); return thisObj; },
+                setData(data) {
+                    thisObj.bind();
+                    gl.bufferData(target, data, mode);
+                    return thisObj;
+                },
+            };
+            return thisObj;
+        },
+
+        elementBuffer(mode = GL_STATIC_DRAW) {
+            const rawBuf = thisStateObj.buffer(GL_ELEMENT_ARRAY_BUFFER, mode);
+            const thisObj: EBState = {
+                buf: rawBuf.buf,
+                bind() { rawBuf.bind(); return thisObj; },
+                setData(data) {
+                    rawBuf.setData(new Uint16Array(data));
+                    return thisObj;
+                },
+            };
+            return thisObj;
+        },
+
+        VAO() {
+            const vao = gl.createVertexArray() as WebGLVertexArrayObject;
+            const thisObj: VAOState = {
+                vao,
+                bind() {
+                    gl.bindVertexArray(vao);
+                    return thisObj;
+                },
+                setPtr(
+                    loc,
+                    size,
+                    stride = 0,
+                    offset = 0,
+                    type = GL_FLOAT,
+                    normalize = false
+                ) {
+                    thisObj.bind();
+                    gl.enableVertexAttribArray(loc);
+                    gl.vertexAttribPointer(loc, size, type, normalize, stride, offset);
+                    return thisObj;
+                },
+            };
+            // binding is helpful so it can be used easily after making the obj
+            return thisObj.bind();
+        },
+
+        texture(target = GL_TEXTURE_2D) {
+            const tex = gl.createTexture() as WebGLTexture;
+            const setParam = (key: number, val: number) =>
+                gl.texParameteri(target, key, val);
+            const thisObj: TextureState = {
+                tex,
+                bind() { gl.bindTexture(target, tex); return thisObj; },
+                // TODO find out if filter is mandatory (use gl_nearest always)
+                setFilter(type = GL_NEAREST) {
+                    setParam(GL_TEXTURE_MIN_FILTER, type);
+                    setParam(GL_TEXTURE_MAG_FILTER, type);
+                    return thisObj;
+                },
+                setWrap(type = GL_CLAMP_TO_EDGE) {
+                    setParam(GL_TEXTURE_WRAP_S, type);
+                    setParam(GL_TEXTURE_WRAP_T, type);
+                    return thisObj;
+                },
+                setTexImage2D(src) {
+                    thisObj.bind();
+                    gl.texImage2D(target, 0, GL_RGBA, GL_RGBA, GL_UNSIGNED_BYTE, src);
+                    gl.generateMipmap(target);
+                    return thisObj;
+                },
+                // TODO: Turn this into async
+                setImage(imgSrc) {
+                    const img = new Image;
+                    img.src = imgSrc;
+                    img.onload = () => { thisObj.setTexImage2D(img) };
+                    return thisObj;
+                },
+                setTexData(
+                    data,
+                    level = 0,
+                    internalFormat = GL_R8,
+                    width = 2,
+                    height = 2,
+                    border = 0,
+                    format = GL_RED,
+                    type = GL_UNSIGNED_BYTE,
+                    alignment = 1,
+                ) {
+                    thisObj.bind();
+                    gl.pixelStorei(GL_UNPACK_ALIGNMENT, alignment);
+                    gl.texImage2D(
+                        target,
+                        level,
+                        internalFormat,
+                        width,
+                        height,
+                        border,
+                        format,
+                        type,
+                        data,
+                    );
+                    return thisObj;
+                },
+                setUnit(loc, unit) {
+                    gl.uniform1i(loc, unit);
+                    gl.activeTexture(GL_TEXTURE0 + unit);
+                    thisObj.bind();
+                    return thisObj;
+                },
+            };
+            // set a temporary blue texture
+            thisObj.setTexData(
+                new Uint8Array([0, 0, 255, 255]),
+                0, GL_RGBA,
+                1, 1, 0,
+                GL_RGBA,
+                GL_UNSIGNED_BYTE
+            );
+            return thisObj;
+        },
+
         draw: (count, mode = GL_TRIANGLES, offset = 0) =>
             gl.drawArrays(mode, offset, count),
+
         drawElements: (count, mode = GL_TRIANGLES, offset = 0) =>
             gl.drawElements(mode, count, GL_UNSIGNED_SHORT, offset),
 
         createMesh([data, indices], attribs) {
-            const vao = thisObj.VAO();
-            thisObj.buffer().setData(data);
-            thisObj.elementBuffer().setIndices(indices);
+            const vao = thisStateObj.VAO();
+            thisStateObj.buffer().setData(data);
+            thisStateObj.elementBuffer().setData(indices);
             attribs.forEach(attr => vao.setPtr(...attr));
             return {
-                vao: vao,
-                draw: () => thisObj.drawElements(indices.length),
+                vao,
+                draw: () => thisStateObj.drawElements(indices.length),
             };
         },
+
         resize() {
             const ratio = deviceScaleRatio(width, height);
             canvas.width = width;
@@ -450,11 +437,13 @@ export const createGLContext = (
             (document.getElementById('d') as HTMLElement).style.display =
                 window.innerWidth < window.innerHeight ? 'block' : 'none';
         },
+
         changeSize(w, h) {
             width = w;
             height = h;
-            thisObj.resize();
+            thisStateObj.resize();
         },
+
         renderTargetContext(
             target,
             w = width,
@@ -488,7 +477,7 @@ export const createGLContext = (
                 target.tex,
                 0,
             );
-            const depth = thisObj.texture()
+            const depth = thisStateObj.texture()
                 .setTexData(
                     null, 0,
                     GL_DEPTH_COMPONENT24,
@@ -509,5 +498,5 @@ export const createGLContext = (
         },
     };
 
-    return thisObj;
+    return thisStateObj;
 };
