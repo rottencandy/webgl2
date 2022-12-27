@@ -1,9 +1,11 @@
+import { setupKeyListener } from '../engine/input';
 import { createGLContext } from '../engine/webgl2';
 import { Plane } from '../vertices';
 import { FPSCam3D } from './utils/views';
 
-const ctx = createGLContext(document.getElementById('c') as any, 300, 300, true);
+const ctx = createGLContext(document.getElementById('c') as any, 300, 300);
 (onresize = ctx.resize)();
+setupKeyListener(document.getElementById('c') as any, true);
 
 const frag = `#version 300 es
 precision lowp float;

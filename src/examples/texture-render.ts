@@ -4,9 +4,11 @@ import { Cube, cubeTexCoords } from '../vertices';
 import { FPSCam3D } from './utils/views';
 
 import img from './assets/eff.png';
+import { setupKeyListener } from '../engine/input';
 
-const ctx = createGLContext(document.getElementById('c') as any, 300, 300, true);
+const ctx = createGLContext(document.getElementById('c') as any, 300, 300);
 (onresize = ctx.resize)();
+setupKeyListener(document.getElementById('c') as any, true);
 
 /**
 * Texture vertex

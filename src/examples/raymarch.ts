@@ -2,9 +2,11 @@ import { createGLContext } from '../engine/webgl2';
 import { Cube } from '../vertices';
 import { makeShader } from '../globals';
 import { FPSCam3D } from './utils/views';
+import { setupKeyListener } from '../engine/input';
 
-const ctx = createGLContext(document.getElementById('c') as any, 300, 300, true);
+const ctx = createGLContext(document.getElementById('c') as any, 300, 300);
 (onresize = ctx.resize)();
+setupKeyListener(document.getElementById('c') as any, true);
 
 /**
 * Calculates vertices

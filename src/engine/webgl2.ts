@@ -38,7 +38,6 @@ import {
     GL_VERTEX_SHADER,
 } from './gl-constants';
 import { deviceScaleRatio } from '../globals';
-import { setupKeyListener } from './input';
 
 const createShader = (
     gl: WebGL2RenderingContext,
@@ -230,7 +229,6 @@ export const createGLContext = (
     canvas: HTMLCanvasElement,
     width = 400,
     height = 300,
-    lockPointer = false,
 ): WebglState => {
     const gl = canvas.getContext('webgl2') as WebGL2RenderingContext;
     if (!gl)
@@ -248,7 +246,6 @@ export const createGLContext = (
     // For pre-multiplied alpha textures
     //gl.blendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
     gl.clearDepth(1.);
-    setupKeyListener(canvas, lockPointer);
 
     const thisStateObj: WebglState = {
         gl,
