@@ -3,7 +3,9 @@ import { createGLContext } from '../engine/webgl2';
 import { Plane } from '../vertices';
 import { FPSCam3D } from './utils/views';
 
-const ctx = createGLContext(document.getElementById('c') as any, 300, 300);
+const width = 300, height = 300;
+const aspect = width / height;
+const ctx = createGLContext(document.getElementById('c') as any, width, height);
 (onresize = ctx.resize)();
 setupKeyListener(document.getElementById('c') as any, true);
 
@@ -16,19 +18,15 @@ uniform float iTime;
 out vec4 fragColor;
 
 vec4 grid(vec3 fragPos3D, float scale) {
-    vec2 coord = fragPos3D.xz * scale; // use the scale variable to set the distance between the lines
+    vec2 coord = fragPos3D.xz * scale;
     vec2 derivative = fwidth(coord);
     vec2 grid = abs(fract(coord - 0.5) - 0.5) / derivative;
-    float line = min(grid.x, grid.y);
-    float minimumz = min(derivative.y, 1.);
-    float minimumx = min(derivative.x, 1.);
-    vec4 color = vec4(0.2, 0.2, 0.2, 1.0 - min(line, 1.0));
-    // z axis
-    if(fragPos3D.x > -0.1 * minimumx && fragPos3D.x < 0.1 * minimumx)
-        color.b = 1.0;
+    float line = 1. - min(grid.x, grid.y);
+    vec4 color = vec4(vec3(.2), line);
     // x axis
-    if(fragPos3D.z > -0.1 * minimumz && fragPos3D.z < 0.1 * minimumz)
-        color.r = 1.0;
+    color.r = max(1. - step(0.1 * derivative.y, abs(fragPos3D.z)), color.r);
+    // z axis
+    color.g = max(1. - step(0.1 * derivative.x, abs(fragPos3D.x)), color.g);
     return color;
 }
 
@@ -43,7 +41,7 @@ void main() {
 
     gl_FragDepth = computeDepth(fragPos3D);
 
-    fragColor = grid(fragPos3D, 10.) * step(-2., -t);
+    fragColor = grid(fragPos3D, 10.) * step(0., t) * smoothstep(.1, .0, t);
 }
 `;
 
@@ -78,7 +76,7 @@ const { draw } = ctx.createMesh(
     [[0, 2]]
 );
 
-const cam = FPSCam3D(.001, 0, 1, 3, 1);
+const cam = FPSCam3D(.001, 0, 1, 3, aspect);
 
 export const update = (dt: number) => {
     cam.update(dt);
