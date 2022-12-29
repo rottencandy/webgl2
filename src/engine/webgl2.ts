@@ -247,6 +247,15 @@ export const createGLContext = (
     //gl.blendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
     gl.clearDepth(1.);
 
+    return useExistingGLContext(gl);
+};
+
+export const useExistingGLContext = (
+    gl: WebGL2RenderingContext,
+): WebglState => {
+    const canvas = gl.canvas as HTMLCanvasElement;
+    let width = canvas.width, height = canvas.height;
+
     const thisStateObj: WebglState = {
         gl,
 
