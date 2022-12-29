@@ -125,7 +125,7 @@ export const CameraPerspective = (
     zNear: number,
     zFar: number,
     aspect: number
-) => Camera(false, fov, zNear, zFar, aspect);
+) => Camera(false, fov, aspect, zNear, zFar);
 
 /**
  * Create webgl orthographic camera
@@ -137,4 +137,4 @@ export const CameraOrtho = (
     top: number,
     near: number,
     far: number,
-) => Camera(false, left, right, bottom, top, near, far);
+) => Camera(true, left, right, bottom, top, near, far);
