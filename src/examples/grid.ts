@@ -17,9 +17,9 @@ vec4 grid(vec3 fragPos3D, float scale) {
     float line = 1. - min(grid.x, grid.y);
     vec4 color = vec4(vec3(.2), line);
     // x axis
-    color.r = max(1. - step(0.1 * derivative.y, abs(fragPos3D.z)), color.r);
+    color.r = max(1. - step(0.9 * derivative.y, abs(fragPos3D.z)), color.r);
     // z axis
-    color.g = max(1. - step(0.1 * derivative.x, abs(fragPos3D.x)), color.g);
+    color.g = max(1. - step(0.9 * derivative.x, abs(fragPos3D.x)), color.g);
     return color;
 }
 
@@ -34,7 +34,7 @@ void main() {
 
     gl_FragDepth = computeDepth(fragPos3D);
 
-    fragColor = grid(fragPos3D, .5) * step(0., t) * smoothstep(.1, .0, t);
+    fragColor = grid(fragPos3D, .5) * step(0., t) * smoothstep(.5, .0, t);
 }
 `;
 
