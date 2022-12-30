@@ -13,7 +13,8 @@ export const obsEnable = (event: number | string, callback: Callback) => {
 }
 
 export const obsDisable = (event: number | string, callback: Callback) => {
-    CALLBACKS[event].filter(fn => fn != callback);
+    CALLBACKS[event] = CALLBACKS[event].filter(fn => fn !== callback);
+    //CALLBACKS[event].splice(CALLBACKS[event].indexOf(callback));
 }
 
 export const obsEmit = (event: number | string, arg: any) => {
