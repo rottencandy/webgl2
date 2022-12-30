@@ -1,11 +1,11 @@
 /** Create element node tree with props */
 export const $ = (name: string, props: any = {}, ...children: (string | Node)[]) => {
     const ele = document.createElement(name);
-    for (let k of props) {
+    for (let k in props) {
         ele[k] = props[k];
     }
     if (props.style) {
-        for (let k of props) {
+        for (let k in props.style) {
             ele.style[k] = props.style[k];
         }
     }
@@ -31,7 +31,7 @@ export const AABB = (
     x2: number,
     y2: number,
     w2: number,
-    h2: number
+    h2: number,
 ) => {
     return (
         x1 < x2 + w2 &&
