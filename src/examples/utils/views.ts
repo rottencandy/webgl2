@@ -1,5 +1,5 @@
 import { CameraOrtho, CameraPerspective } from '../../engine/cam';
-import { Keys } from '../../engine/input';
+import { Keys } from '../../engine/components/input';
 import { radians } from '../../globals';
 
 export const FPSCam3D = (speed = .01, x = 0, y = 0, z = 20, aspect = 400 / 300) => {

@@ -1,5 +1,3 @@
-import { obsEnable } from './observer';
-
 type WatchedKeys = {
     left: boolean,
     right: boolean,
@@ -113,7 +111,12 @@ export const setupKeyListener = (canvas: HTMLCanvasElement, lockPointer: boolean
     });
 };
 
-obsEnable('tick', () => {
+export const CompInput: ((k: WatchedKeys, dt?: number) => void)[] = [];
+
+export const CompInputRun = (dt: number) => {
+    for (let i = 0; i < CompInput.length; i++) {
+        CompInput[i](Keys, dt);
+    }
     Keys.ptrRelativeOffsetX = 0;
     Keys.ptrRelativeOffsetY = 0;
     if (justClicked) {
@@ -122,4 +125,4 @@ obsEnable('tick', () => {
     } else {
         Keys.justClicked = false;
     }
-});
+};

@@ -1,20 +1,13 @@
-import { setupKeyListener } from '../engine/input';
-import { createGLContext } from '../engine/webgl2';
+import { mat4 } from 'gl-matrix';
+import { CompRender } from '../engine/components/render';
+import { mesh, shaderProgram, uniformFns, useProgram } from '../engine/webgl2-stateless';
 import { Plane } from '../vertices';
-import { FPSCam3D } from './utils/views';
-
-const width = 300, height = 300;
-const aspect = width / height;
-const ctx = createGLContext(document.getElementById('c') as any, width, height);
-(onresize = ctx.resize)();
-setupKeyListener(document.getElementById('c') as any, true);
 
 const frag = `#version 300 es
 precision lowp float;
 in vec3 nearP;
 in vec3 farP;
 in mat4 fragMat;
-uniform float iTime;
 out vec4 fragColor;
 
 vec4 grid(vec3 fragPos3D, float scale) {
@@ -45,50 +38,45 @@ void main() {
 }
 `;
 
-const shader = ctx.shader(
-    `#version 300 es
-    precision lowp float;
-    layout(location=0)in vec2 aPos;
-    uniform float aspect;
-    uniform mat4 uMat;
-    out vec3 nearP;
-    out vec3 farP;
-    out mat4 fragMat;
+const vert = `#version 300 es
+precision lowp float;
+layout(location=0)in vec2 aPos;
+uniform mat4 uMat;
+out vec3 nearP;
+out vec3 farP;
+out mat4 fragMat;
 
-    vec3 unproject(float x, float y, float z, mat4 proj) {
-        vec4 point = inverse(proj) * vec4(x, y, z, 1.);
-        return point.xyz / point.w;
-    }
+vec3 unproject(float x, float y, float z, mat4 proj) {
+    vec4 point = inverse(proj) * vec4(x, y, z, 1.);
+    return point.xyz / point.w;
+}
 
-    void main() {
-        // -1 -> 1
-        vec2 p = aPos - 1.;
-        nearP = unproject(p.x, p.y, 0., uMat);
-        farP = unproject(p.x, p.y, 1., uMat);
-        fragMat = uMat;
-        gl_Position = vec4(p, 0., 1.);
-    }`,
-    frag,
-).use();
+void main() {
+    // -1 -> 1
+    vec2 p = aPos - 1.;
+    nearP = unproject(p.x, p.y, 0., uMat);
+    farP = unproject(p.x, p.y, 1., uMat);
+    fragMat = uMat;
+    gl_Position = vec4(p, 0., 1.);
+}`;
 
-const { draw } = ctx.createMesh(
-    Plane(2),
-    [[0, 2]]
-);
-
-const cam = FPSCam3D(.001, 0, 1, 3, aspect);
-
-export const update = (dt: number) => {
-    cam.update(dt);
+let prg: WebGLProgram, draw: () => void, uniform: any, init = false;
+const render = (gl: WebGL2RenderingContext, mat: mat4) => {
+    useProgram(gl, prg);
+    uniform('uMat').m4fv(mat);
+    draw();
 };
 
-let iTime = 0;
-export const render = () => {
-    const mat = cam.mat();
+export const setup = (gl: WebGL2RenderingContext) => {
+    CompRender.push(render);
+    if (init) return;
+    prg = shaderProgram(gl, vert, frag);
+    uniform = uniformFns(gl, prg);
+    [, draw] = mesh(gl, Plane(2), [[0, 2]]);
+    init = true;
 
-    shader.uniform`iTime`.u1f(iTime+=.01);
-    shader.uniform`uMat`.m4fv(mat);
+};
 
-    ctx.clear();
-    draw();
+export const teardown = () => {
+    CompRender.splice(CompRender.indexOf(render));
 };

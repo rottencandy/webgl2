@@ -98,7 +98,8 @@ const createShader = (
     return shader;
 };
 
-/** Create shader program state */
+/** Create shader program state.
+* Automatically sets as active program. */
 export const shaderProgram = (gl: GL, vSource: string, fSource: string) => {
     const prg = gl.createProgram() as WebGLProgram;
     gl.attachShader(prg, createShader(gl, GL_VERTEX_SHADER, vSource));
@@ -111,7 +112,6 @@ export const shaderProgram = (gl: GL, vSource: string, fSource: string) => {
         //console.error('fs log: ', gl.getShaderInfoLog(fShader));
         //throw new Error;
     }
-
     return prg;
 };
 

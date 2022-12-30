@@ -1,7 +1,4 @@
-import { obsInit } from './observer';
 type StepFn = (delta: number) => void;
-
-const emitTick = obsInit('tick');
 
 /**
  * Start the game loop
@@ -22,7 +19,6 @@ export const startLoop = (update: StepFn, render: StepFn) => {
         while (dt > step) {
             dt -= step;
             update(step);
-            emitTick(step);
         };
 
         render(t++);
