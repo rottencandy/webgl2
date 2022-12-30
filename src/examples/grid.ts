@@ -25,7 +25,7 @@ vec4 grid(vec3 fragPos3D, float scale) {
 
 float computeDepth(vec3 p) {
     vec4 clipSpacePos = fragMat * vec4(p.xyz, 1.0);
-    return clipSpacePos.z / clipSpacePos.w;
+    return clipSpacePos.z;
 }
 
 void main() {
@@ -34,7 +34,7 @@ void main() {
 
     gl_FragDepth = computeDepth(fragPos3D);
 
-    fragColor = grid(fragPos3D, 10.) * step(0., t) * smoothstep(.1, .0, t);
+    fragColor = grid(fragPos3D, .5) * step(0., t) * smoothstep(.1, .0, t);
 }
 `;
 
