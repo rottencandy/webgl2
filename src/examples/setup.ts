@@ -4,6 +4,7 @@ import { CompPhysicsRun } from "../engine/components/physics";
 import { CompRenderRun } from "../engine/components/render";
 import { createGLContext, resize } from "../engine/webgl2-stateless";
 import { FPSCam3D } from "./utils/views";
+import { setup as setupGrid } from "./grid";
 import { setup } from "./lightning";
 
 export const runExamples = () => {
@@ -14,6 +15,7 @@ export const runExamples = () => {
     const cam = FPSCam3D(.01, 0, 5, 20, width / height);
 
     setup(gl);
+    setupGrid(gl);
 
     startLoop(
         (dt) => {
