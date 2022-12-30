@@ -1,12 +1,8 @@
-import { setupKeyListener } from '../engine/input';
-import { createGLContext } from '../engine/webgl2';
+import { mat4, vec3 } from 'gl-matrix';
+import { CompRender } from '../engine/components/render';
+import { bindVAO, mesh, shaderProgram, uniformFns, useProgram } from '../engine/webgl2-stateless';
 import { makeShader } from '../globals';
 import { Cube } from '../vertices';
-import { FPSCam3D } from './utils/views';
-
-const ctx = createGLContext(document.getElementById('c') as any, 300, 300);
-(onresize = ctx.resize)();
-setupKeyListener(document.getElementById('c') as any, true);
 
 /**
 * Calculates transformed vertices and provides
@@ -89,58 +85,53 @@ const fragmentPhong = makeShader`
         outColor = vec4(result, 1.);
     }`;
 
-const shader = ctx.shader(
-    vertexNormalFrag,
-    fragmentPhong
-).use();
+const render = (gl: WebGL2RenderingContext, mat: mat4, eye: vec3) => {
+    bindVAO(gl, vao);
+    useProgram(gl, prg);
 
-const { vao, draw } = ctx.createMesh(
-    Cube(10),
-    [
-        // aPos
-        [0, 3, 24],
-        // aNorm
-        [1, 3, 24, 12],
-    ]
-);
-
-const lightSh = ctx.shader(
-    vertexPos,
-    fragmentStatic
-).use();
-
-const { vao: lightVao, draw: drawLight } = ctx.createMesh(
-    Cube(3),
-    [
-        [0, 3, 24],
-    ]
-);
-
-const cam = FPSCam3D(.01, 0, 0, 20, 1);
-
-export const update = (dt: number) => {
-    cam.update(dt);
-};
-
-export const render = () => {
-    ctx.clear();
-    const mat = cam.mat();
-
-    vao.bind();
-    shader.use();
-
-    shader.uniform`uPos`.u4f(0, 0, 0, 0);
-    shader.uniform`uMat`.m4fv(mat);
-    shader.uniform`uCam`.u3f(cam.eye[0], cam.eye[1], cam.eye[2]);
-    shader.uniform`uLightPos`.u3f(20, 20, 20);
-    shader.uniform`uColor`.u3f(.2, .7, .5);
+    uniform('uPos').u4f(0, 0, 0, 0);
+    uniform('uMat').m4fv(mat);
+    uniform('uCam').u3f(eye[0], eye[1], eye[2]);
+    uniform('uLightPos').u3f(20, 20, 20);
+    uniform('uColor').u3f(.2, .7, .5);
     draw();
 
-    lightVao.bind();
-    lightSh.use();
+    bindVAO(gl, lightVao);
+    useProgram(gl, lightPrg);
 
-    lightSh.uniform`uMat`.m4fv(mat);
-    lightSh.uniform`uColor`.u3f(1, 1, 1);
-    lightSh.uniform`uPos`.u4f(20, 20, 20, 0);
+    lightUniform('uMat').m4fv(mat);
+    lightUniform('uColor').u3f(1, 1, 1);
+    lightUniform('uPos').u4f(20, 20, 20, 0);
     drawLight();
+};
+
+let prg, lightPrg, vao, lightVao, draw, drawLight, uniform, lightUniform, init = false;
+export const setup = (gl: WebGL2RenderingContext) => {
+    CompRender.push(render);
+    if (init) return;
+    init = true;
+    prg = shaderProgram(gl, vertexNormalFrag, fragmentPhong);
+    [ vao, draw ] = mesh(
+        gl,
+        Cube(10),
+        [
+            // aPos
+            [0, 3, 24],
+            // aNorm
+            [1, 3, 24, 12],
+        ]
+    );
+    uniform = uniformFns(gl, prg);
+
+    lightPrg = shaderProgram(gl, vertexPos, fragmentStatic);
+    [lightVao, drawLight] = mesh(
+        gl,
+        Cube(3),
+        [[0, 3, 24]],
+    );
+    lightUniform = uniformFns(gl, lightPrg);
+};
+
+export const teardown = () => {
+    CompRender.splice(CompRender.indexOf(render));
 };

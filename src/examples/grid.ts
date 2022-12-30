@@ -70,11 +70,10 @@ const render = (gl: WebGL2RenderingContext, mat: mat4) => {
 export const setup = (gl: WebGL2RenderingContext) => {
     CompRender.push(render);
     if (init) return;
+    init = true;
     prg = shaderProgram(gl, vert, frag);
     uniform = uniformFns(gl, prg);
     [, draw] = mesh(gl, Plane(2), [[0, 2]]);
-    init = true;
-
 };
 
 export const teardown = () => {

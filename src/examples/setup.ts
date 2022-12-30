@@ -4,14 +4,14 @@ import { CompPhysicsRun } from "../engine/components/physics";
 import { CompRenderRun } from "../engine/components/render";
 import { createGLContext, resize } from "../engine/webgl2-stateless";
 import { FPSCam3D } from "./utils/views";
-import { setup } from "./grid";
+import { setup } from "./lightning";
 
 export const runExamples = () => {
     const canvas = document.getElementById('c') as HTMLCanvasElement, width = 300, height = 300;
     setupKeyListener(canvas, true);
     const gl = createGLContext(canvas, width, height);
     (onresize = () => resize(gl, canvas, width, height))();
-    const cam = FPSCam3D(.001, 0, 1, 3, width / height);
+    const cam = FPSCam3D(.01, 0, 5, 20, width / height);
 
     setup(gl);
 
@@ -22,7 +22,7 @@ export const runExamples = () => {
             CompPhysicsRun(dt);
         },
         (t) => {
-            CompRenderRun(gl, cam.mat(), width / height, t);
+            CompRenderRun(gl, cam.mat(), cam.eye, width / height, t);
         },
     );
 };
