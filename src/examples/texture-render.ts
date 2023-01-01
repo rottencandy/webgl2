@@ -1,7 +1,7 @@
 import { mat4 } from 'gl-matrix';
 import { makeShader } from '../globals';
 import { Cube, cubeTexCoords } from '../vertices';
-import { bindTexture, bindVAO, buffer, clear, loadTextureImage, mesh, renderTargetContext, setBufferData, setVAOPtr, shaderProgram, texture, uniformFns, useProgram } from '../engine/webgl2-stateless';
+import { bindTexture, bindVAO, buffer, clear, enableRenderTarget, loadTextureImage, mesh, renderTarget, setBufferData, setVAOPtr, shaderProgram, texture, uniformFns, useProgram } from '../engine/webgl2-stateless';
 import { CompRender } from '../engine/components/render';
 import img from './assets/eff.png';
 
@@ -32,19 +32,18 @@ const fragmentTex = makeShader`
     }`;
 
 
-const render = (gl: WebGL2RenderingContext, mat: mat4) => {
+const render = (gl: WebGL2RenderingContext, mat: mat4, _eye, _aspect, _t, parentFB: WebGLFramebuffer) => {
     bindVAO(gl, vao);
     useProgram(gl, prg);
 
     uniform('uPos').u4f(0, 0, 0, 0);
+    uniform('uMat').m4fv(mat);
 
-    enableTarget();
-        uniform('uMat').m4fv(mat);
-
-        bindTexture(gl, tex);
-        clear(gl);
-        draw();
-    disableTarget();
+    enableRenderTarget(gl, fb, gl.canvas.width, gl.canvas.height);
+    bindTexture(gl, tex);
+    clear(gl);
+    draw();
+    enableRenderTarget(gl, parentFB, gl.canvas.width, gl.canvas.height);
 
     uniform('uMat').m4fv(mat);
 
@@ -52,7 +51,7 @@ const render = (gl: WebGL2RenderingContext, mat: mat4) => {
     draw();
 };
 
-let init = false, vao, draw, prg, uniform, tex, target, enableTarget, disableTarget;
+let init = false, vao, draw, prg, uniform, tex, target, fb;
 export const setup = (gl: WebGL2RenderingContext) => {
     CompRender.push(render);
     if (init) return;
@@ -73,7 +72,7 @@ export const setup = (gl: WebGL2RenderingContext) => {
     tex = loadTextureImage(gl, texture(gl), img);
 
     target = texture(gl);
-    [enableTarget, disableTarget] = renderTargetContext(gl, target, gl.canvas.width, gl.canvas.height);
+    fb = renderTarget(gl, target, gl.canvas.width, gl.canvas.height);
 };
 
 export const teardown = () => {

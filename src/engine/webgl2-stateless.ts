@@ -303,9 +303,9 @@ export const setTextureWrap = (gl: GL, target: GLConst = GL_TEXTURE_2D, type: GL
  * Binds texture automatically.
  * Use `loadTextureImage` if loading image with strings.
  */
-export const setTextureImage = (gl: GL, tex: WebGLTexture, src: TexImageSource, target: GLConst = GL_TEXTURE_2D) => {
+export const setTextureImage = (gl: GL, tex: WebGLTexture, src: TexImageSource, level = 0, target: GLConst = GL_TEXTURE_2D) => {
     bindTexture(gl, tex, target);
-    gl.texImage2D(target, 0, GL_RGBA, GL_RGBA, GL_UNSIGNED_BYTE, src);
+    gl.texImage2D(target, level, GL_RGBA, GL_RGBA, GL_UNSIGNED_BYTE, src);
     gl.generateMipmap(target);
     return tex;
 };
@@ -314,10 +314,10 @@ export const setTextureImage = (gl: GL, tex: WebGLTexture, src: TexImageSource, 
 /**
  * Binds texture automatically.
  */
-export const loadTextureImage = (gl: GL, tex: WebGLTexture, imgSrc: string, target: GLConst = GL_TEXTURE_2D) => {
+export const loadTextureImage = (gl: GL, tex: WebGLTexture, imgSrc: string, level = 0, target: GLConst = GL_TEXTURE_2D) => {
     const img = new Image;
     img.src = imgSrc;
-    img.onload = () => { setTextureImage(gl, tex, img, target) };
+    img.onload = () => { setTextureImage(gl, tex, img, level, target) };
     return tex;
 };
 
@@ -441,29 +441,20 @@ export const resize = (
 * Returns an methods that can enable or disable rendering
 * to the texture.
 */
-export const renderTargetContext = (
+export const renderTarget = (
     gl: GL,
     tex: WebGLTexture,
     width: number,
     height: number,
     internalFormat: GLConst = GL_RGBA,
     format: GLConst = GL_RGBA,
-): [enable: () => void, disable: () => void] => {
+)  => {
     const fb = gl.createFramebuffer() as WebGLFramebuffer;
     setTexData(gl, tex, null, GL_TEXTURE_2D, 0, internalFormat, width, height, 0, format);
     setTextureFilter(gl);
 
-    const enableTarget = () => {
-        gl.bindFramebuffer(GL_FRAMEBUFFER, fb);
-        gl.viewport(0, 0, width as number, height as number);
-    };
-    const disableTarget = () => {
-        gl.bindFramebuffer(GL_FRAMEBUFFER, null);
-        gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
-    };
-
     // setup depth texture
-    enableTarget();
+    enableRenderTarget(gl, fb, width, height);
     gl.framebufferTexture2D(
         GL_FRAMEBUFFER,
         GL_COLOR_ATTACHMENT0,
@@ -480,7 +471,17 @@ export const renderTargetContext = (
         GL_TEXTURE_2D,
         depth, 0,
     );
-    disableTarget();
+    disableRenderTarget(gl);
 
-    return [enableTarget, disableTarget];
+    return fb;
+};
+
+export const enableRenderTarget = (gl: GL, fb: WebGLFramebuffer, width: number, height: number) => {
+    gl.bindFramebuffer(GL_FRAMEBUFFER, fb);
+    gl.viewport(0, 0, width as number, height as number);
+};
+
+export const disableRenderTarget = (gl: GL) => {
+    gl.bindFramebuffer(GL_FRAMEBUFFER, null);
+    gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
 };
