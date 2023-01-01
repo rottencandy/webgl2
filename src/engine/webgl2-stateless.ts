@@ -53,7 +53,7 @@ export const createGLContext = (
     width = 400,
     height = 300,
 ): GL => {
-    const gl = canvas.getContext('webgl2') as WebGL2RenderingContext;
+    const gl = canvas.getContext('webgl2', { antialias: false }) as WebGL2RenderingContext;
     if (!gl)
         alert('Could not get gl context');
 
@@ -444,8 +444,8 @@ export const resize = (
 export const renderTargetContext = (
     gl: GL,
     tex: WebGLTexture,
-    width?: number,
-    height?: number,
+    width: number,
+    height: number,
     internalFormat: GLConst = GL_RGBA,
     format: GLConst = GL_RGBA,
 ): [enable: () => void, disable: () => void] => {
@@ -455,15 +455,11 @@ export const renderTargetContext = (
 
     const enableTarget = () => {
         gl.bindFramebuffer(GL_FRAMEBUFFER, fb);
-        if (width && height) {
-            gl.viewport(0, 0, width, height);
-        }
+        gl.viewport(0, 0, width as number, height as number);
     };
     const disableTarget = () => {
         gl.bindFramebuffer(GL_FRAMEBUFFER, null);
-        if (width && height) {
-            gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
-        }
+        gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
     };
 
     // setup depth texture

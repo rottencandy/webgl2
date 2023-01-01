@@ -20,8 +20,6 @@ export const FLOOR = (x: number) => ~~x;
 
 export const radians = (a: number) => a * Math.PI / 180;
 
-export const F32 = (x: Iterable<number>) => new Float32Array(x);
-
 // https://developer.mozilla.org/en-US/docs/Games/Techniques/2D_collision_detection
 export const AABB = (
     x1: number,

@@ -23,11 +23,12 @@ html, body {
     margin: auto;
     position: absolute;
 
-    /* Pixelate instead of blurring */
+    /* Pixelate instead of blurring
     image-rendering: -moz-crisp-edges;
     image-rendering: -webkit-crisp-edges;
     image-rendering: pixelated;
     image-rendering: crisp-edges;
+    */
 }
 
 /* Note for potrait devices */

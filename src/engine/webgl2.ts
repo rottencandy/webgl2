@@ -243,7 +243,7 @@ export const createGLContext = (
     width = 400,
     height = 300,
 ): WebglState => {
-    const gl = canvas.getContext('webgl2') as WebGL2RenderingContext;
+    const gl = canvas.getContext('webgl2', { antialias: false }) as WebGL2RenderingContext;
     if (!gl)
         alert('Could not get gl context');
 

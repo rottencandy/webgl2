@@ -1,12 +1,10 @@
-import { F32 } from './globals';
-
 /** vertex data contains vertices(0) and indices(1) */
 type MeshData = [Float32Array, number[]];
 
 // plane {{{
 
 export const Plane = (s: number): MeshData => [
-    F32([
+    new Float32Array([
         0, 0,
         s, 0,
         s, s,
@@ -15,7 +13,7 @@ export const Plane = (s: number): MeshData => [
     [0, 1, 2, 0, 2, 3,],
 ];
 
-export const planeTexCoords = F32([
+export const planeTexCoords = new Float32Array([
     0, 0,
     1, 0,
     1, 1,
@@ -29,7 +27,7 @@ export const planeTexCoords = F32([
 /* Cube vertices include embedded vertex normals */
 export const Cube = (s: number): MeshData => [
     // vertices
-    F32([
+    new Float32Array([
         // front face
         0, s, s,
         0, 0, 1,
@@ -96,7 +94,7 @@ export const Cube = (s: number): MeshData => [
     ],
 ];
 
-export const cubeTexCoords = F32([
+export const cubeTexCoords = new Float32Array([
         // front face
         0, 1,
         0, 0,
