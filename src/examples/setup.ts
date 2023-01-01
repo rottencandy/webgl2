@@ -8,6 +8,7 @@ import { setup as setupGrid, teardown as teardownGrid } from "./grid";
 import { setup as setupLight, teardown as teardownLight } from "./lightning";
 import { setup as setupUbo, teardown as teardownUbo } from "./ubo";
 import { setup as setupFXAA, render as renderFXAA } from "./fxaa";
+import { setup as setupRenderTex, teardown as teardownRenderTex } from "./texture-render";
 import { addToPanel } from "../debug";
 import { $ } from "../globals";
 
@@ -16,6 +17,8 @@ const scenes
     grid: { setup: setupGrid, teardown: teardownGrid },
     lightning: { setup: setupLight, teardown: teardownLight },
     ubo: { setup: setupUbo, teardown: teardownUbo },
+    // note: texture rendering inside texture rendering doesn't work
+    renderTex: { setup: setupRenderTex, teardown: teardownRenderTex },
 };
 let active = 'grid';
 

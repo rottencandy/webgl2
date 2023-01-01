@@ -1,14 +1,9 @@
-import { createGLContext } from '../engine/webgl2';
+import { mat4 } from 'gl-matrix';
 import { makeShader } from '../globals';
 import { Cube, cubeTexCoords } from '../vertices';
-import { FPSCam3D } from './utils/views';
-
+import { bindTexture, bindVAO, buffer, clear, loadTextureImage, mesh, renderTargetContext, setBufferData, setVAOPtr, shaderProgram, texture, uniformFns, useProgram } from '../engine/webgl2-stateless';
+import { CompRender } from '../engine/components/render';
 import img from './assets/eff.png';
-import { setupKeyListener } from '../engine/input';
-
-const ctx = createGLContext(document.getElementById('c') as any, 300, 300);
-(onresize = ctx.resize)();
-setupKeyListener(document.getElementById('c') as any, true);
 
 /**
 * Texture vertex
@@ -33,54 +28,54 @@ const fragmentTex = makeShader`
     out vec4 outColor;
 
     void main() {
-        outColor = texture(uTex, vTex);
+        outColor = texture(uTex, vTex) + vec4(.05);
     }`;
 
-const shader = ctx.shader(
-    vertexTex,
-    fragmentTex,
-).use();
 
-const { vao, draw } = ctx.createMesh(
-    Cube(10),
-    // aPos
-    [[0, 3, 24]]
-);
+const render = (gl: WebGL2RenderingContext, mat: mat4) => {
+    bindVAO(gl, vao);
+    useProgram(gl, prg);
 
-// aTex
-ctx.buffer().bind().setData(cubeTexCoords);
-vao.setPtr(1, 2);
-const tx = ctx.texture().setImage(img);
+    uniform('uPos').u4f(0, 0, 0, 0);
 
-const target = ctx.texture();
-const renderTarget = ctx.renderTargetContext(target);
+    enableTarget();
+        uniform('uMat').m4fv(mat);
 
-const cam = FPSCam3D(.01, 0, 0, 20, 1);
+        bindTexture(gl, tex);
+        clear(gl);
+        draw();
+    disableTarget();
 
-export const update = (dt: number) => {
-    cam.update(dt);
+    uniform('uMat').m4fv(mat);
+
+    bindTexture(gl, target);
+    draw();
 };
 
-const initCam = cam.mat();
-export const render = () => {
-    vao.bind();
-    shader.use();
+let init = false, vao, draw, prg, uniform, tex, target, enableTarget, disableTarget;
+export const setup = (gl: WebGL2RenderingContext) => {
+    CompRender.push(render);
+    if (init) return;
+    init = true;
 
-    shader.uniform`uPos`.u4f(0, 0, 0, 0);
+    prg = shaderProgram(gl, vertexTex, fragmentTex);
+    [ vao, draw ] = mesh(
+        gl,
+        Cube(10),
+        // aPos
+        [[0, 3, 24]]
+    );
+    uniform = uniformFns(gl, prg);
 
-    renderTarget.enable();
-        ctx.clear();
+    // aTex
+    setBufferData(gl, buffer(gl), cubeTexCoords);
+    setVAOPtr(gl, vao, 1, 2);
+    tex = loadTextureImage(gl, texture(gl), img);
 
-        shader.uniform`uMat`.m4fv(initCam);
+    target = texture(gl);
+    [enableTarget, disableTarget] = renderTargetContext(gl, target, gl.canvas.width, gl.canvas.height);
+};
 
-        tx.bind();
-        draw();
-    renderTarget.disable();
-
-    ctx.clear();
-
-    shader.uniform`uMat`.m4fv(cam.mat());
-
-    target.bind();
-    draw();
+export const teardown = () => {
+    CompRender.splice(CompRender.indexOf(render));
 };
