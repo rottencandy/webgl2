@@ -1,4 +1,22 @@
+// for gl-matrix types
+///<reference path="../global.d.ts" />
 import { mat4, vec3 } from 'gl-matrix';
+import {
+    clone as m4clone,
+    create as m4create,
+    lookAt as m4lookAt,
+    mul as m4mul,
+    ortho as m4ortho,
+    perspective as m4perspective,
+} from 'gl-matrix/mat4';
+import {
+    create as v3create,
+    set as v3set,
+    scale as v3scale,
+    add as v3add,
+    cross as v3cross,
+    normalize as v3normalize,
+} from 'gl-matrix/vec3';
 
 type CamState = {
     /**
@@ -35,46 +53,46 @@ type CamState = {
 
 const MAX_PITCH = Math.PI / 2 - 0.01;
 
-const Camera = (ortho: boolean, ...props: number[]): CamState => {
-    const projectionMat = ortho ?
+const Camera = (isOrtho: boolean, ...props: number[]): CamState => {
+    const projectionMat = isOrtho ?
         // @ts-ignore
-        mat4.ortho(mat4.create(), ...props) :
+        m4ortho(m4create(), ...props) :
         // @ts-ignore
-        mat4.perspective(mat4.create(), ...props);
-    const viewMat = mat4.create();
+        m4perspective(m4create(), ...props);
+    const viewMat = m4create();
 
-    const pos = vec3.create();
-    const up = vec3.set(vec3.create(), 0, 1, 0);
-    const front = vec3.set(vec3.create(), 0, 0, -1);
+    const pos = v3create();
+    const up = v3set(v3create(), 0, 1, 0);
+    const front = v3set(v3create(), 0, 0, -1);
     // make cam initially point to z=-1
     let yaw = -Math.PI / 2,
         pitch = 0;
 
     // temporary cached variables
-    const t_move = vec3.create();
-    const t_side = vec3.create();
-    const t_dir = vec3.create();
-    const t_view = mat4.create();
-    const t_target = vec3.create();
+    const t_move = v3create();
+    const t_side = v3create();
+    const t_dir = v3create();
+    const t_view = m4create();
+    const t_target = v3create();
 
     const thisObj: CamState = {
         move(x, y, z) {
             if (z) {
-                vec3.scale(t_move, front, z);
+                v3scale(t_move, front, z);
                 // reset y dir, so we always move paralell to the ground
                 // regardless of face direction
                 // t_move[1] = 0;
-                vec3.add(pos, pos, t_move);
+                v3add(pos, pos, t_move);
             }
             if (y) {
-                vec3.scale(t_move, up, y);
-                vec3.add(pos, pos, t_move);
+                v3scale(t_move, up, y);
+                v3add(pos, pos, t_move);
             }
             if (x) {
-                vec3.cross(t_side, up, front);
-                vec3.normalize(t_side, t_side);
-                vec3.scale(t_move, t_side, x);
-                vec3.add(pos, pos, t_move);
+                v3cross(t_side, up, front);
+                v3normalize(t_side, t_side);
+                v3scale(t_move, t_side, x);
+                v3add(pos, pos, t_move);
             }
             return thisObj;
         },
@@ -90,24 +108,24 @@ const Camera = (ortho: boolean, ...props: number[]): CamState => {
             t_dir[0] = Math.cos(yaw) * cosPitch;
             t_dir[1] = Math.sin(pitch);
             t_dir[2] = Math.sin(yaw) * cosPitch;
-            vec3.normalize(front, t_dir);
+            v3normalize(front, t_dir);
             return thisObj;
         },
         moveTo(x, y, z) {
-            vec3.set(pos, x, y, z);
+            v3set(pos, x, y, z);
             return thisObj;
         },
         // TODO
         lookAt(_x, _y, _z) {
-            //vec3.set(target, x, y, z);
+            //v3set(target, x, y, z);
             return thisObj;
         },
         recalculate() {
-            mat4.lookAt(t_view, pos, vec3.add(t_target, pos, front), up);
-            mat4.mul(thisObj.matrix, projectionMat, t_view);
+            m4lookAt(t_view, pos, v3add(t_target, pos, front), up);
+            m4mul(thisObj.matrix, projectionMat, t_view);
             return thisObj;
         },
-        matrix: mat4.clone(projectionMat),
+        matrix: m4clone(projectionMat),
         viewMatrix: viewMat,
         projectionMatrix: projectionMat,
         eye: pos,
