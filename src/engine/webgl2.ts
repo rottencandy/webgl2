@@ -10,6 +10,7 @@ import {
     GL_DEPTH_COMPONENT,
     GL_DEPTH_COMPONENT24,
     GL_DEPTH_TEST,
+    GL_DYNAMIC_DRAW,
     GL_ELEMENT_ARRAY_BUFFER,
     GL_FLOAT,
     GL_FRAGMENT_SHADER,
@@ -31,6 +32,9 @@ import {
     GL_TEXTURE_WRAP_S,
     GL_TEXTURE_WRAP_T,
     GL_TRIANGLES,
+    GL_UNIFORM_BLOCK_DATA_SIZE,
+    GL_UNIFORM_BUFFER,
+    GL_UNIFORM_OFFSET,
     GL_UNPACK_ALIGNMENT,
     GL_UNSIGNED_BYTE,
     GL_UNSIGNED_INT,
@@ -96,6 +100,13 @@ type VAOState = {
         type?: number,
         normalize?: boolean,
     ) => VAOState;
+};
+
+type UBOState = {
+    buf: WebGLBuffer;
+    bindPrg: (p: WebGLProgram) => UBOState;
+    bind: () => UBOState;
+    set: (data: ArrayBufferView[]) => UBOState;
 };
 
 type BufferState = {
@@ -179,6 +190,8 @@ type WebglState = {
     elementBuffer: (mode?: number) => EBState;
     /** Create VAO state */
     VAO: () => VAOState;
+    /** Create Uniform BUffer Object */
+    UBO: (name: string, prg: WebGLProgram, vars: string[], loc?: number) => UBOState;
     /** Draw to target */
     draw: (count: number, mode?: number, offset?: number) => void;
     /** Draw using elements */
@@ -338,6 +351,49 @@ export const useExistingGLContext = (
             };
             // binding is helpful so it can be used easily after making the obj
             return thisObj.bind();
+        },
+
+        // https://gist.github.com/jialiang/2880d4cc3364df117320e8cb324c2880
+        UBO(name, prg, vars, loc = 0) {
+            const blockIndex = gl.getUniformBlockIndex(prg, name);
+            const blockSize = gl.getActiveUniformBlockParameter(
+                prg,
+                blockIndex,
+                GL_UNIFORM_BLOCK_DATA_SIZE,
+            );
+            // dynamic draw because we expect to modify the buffer contents frequently
+            const buf = thisStateObj
+                .buffer(GL_UNIFORM_BUFFER, GL_DYNAMIC_DRAW)
+                .setData(blockSize);
+            gl.bindBufferBase(GL_UNIFORM_BUFFER, loc, buf.buf);
+
+            // this only needs to be done with one prg,
+            // regardless of how many prgs will use the UBO
+            const indices = gl.getUniformIndices(prg, vars) as Iterable<number>;
+            const offsets = gl.getActiveUniforms(prg, indices, GL_UNIFORM_OFFSET);
+
+            // this needs to be done for every prg that wants to use the UBO
+            gl.uniformBlockBinding(prg, gl.getUniformBlockIndex(prg, name), loc);
+
+            const thisObj: UBOState = {
+                buf: buf.buf,
+                bindPrg(p) {
+                    gl.uniformBlockBinding(prg, gl.getUniformBlockIndex(p, name), loc);
+                    return thisObj;
+                },
+                bind() {
+                    buf.bind();
+                    return thisObj;
+                },
+                set(data) {
+                    thisObj.bind();
+                    for (let i = 0; i < offsets.length; i++) {
+                        gl.bufferSubData(GL_UNIFORM_BUFFER, offsets[i], data[i], loc);
+                    }
+                    return thisObj;
+                },
+            };
+            return thisObj;
         },
 
         texture(target = GL_TEXTURE_2D) {

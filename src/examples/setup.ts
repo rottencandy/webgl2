@@ -6,6 +6,7 @@ import { createGLContext, resize } from "../engine/webgl2-stateless";
 import { FPSCam3D } from "./utils/views";
 import { setup as setupGrid, teardown as teardownGrid } from "./grid";
 import { setup as setupLight, teardown as teardownLight } from "./lightning";
+import { setup as setupUbo, teardown as teardownUbo } from "./ubo";
 import { addToPanel } from "../debug";
 import { $ } from "../globals";
 
@@ -13,6 +14,7 @@ const scenes
 :{ [key: string]: { setup: (gl: WebGL2RenderingContext) => void, teardown: () => void } } = {
     grid: { setup: setupGrid, teardown: teardownGrid },
     lightning: { setup: setupLight, teardown: teardownLight },
+    ubo: { setup: setupUbo, teardown: teardownUbo },
 };
 let active = 'grid';
 
