@@ -2,7 +2,7 @@ import { startLoop } from "../engine/loop";
 import { CompInputRun, setupKeyListener } from "../engine/components/input";
 import { CompPhysicsRun } from "../engine/components/physics";
 import { CompRenderRun } from "../engine/components/render";
-import { bindTexture, createGLContext, renderTargetContext, resize, texture } from "../engine/webgl2-stateless";
+import { bindTexture, createGLContext, disableRenderTarget, enableRenderTarget, renderTarget, resize, texture } from "../engine/webgl2-stateless";
 import { FPSCam3D } from "./utils/views";
 import { setup as setupGrid, teardown as teardownGrid } from "./grid";
 import { setup as setupLight, teardown as teardownLight } from "./lightning";
@@ -17,7 +17,6 @@ const scenes
     grid: { setup: setupGrid, teardown: teardownGrid },
     lightning: { setup: setupLight, teardown: teardownLight },
     ubo: { setup: setupUbo, teardown: teardownUbo },
-    // note: texture rendering inside texture rendering doesn't work
     renderTex: { setup: setupRenderTex, teardown: teardownRenderTex },
 };
 let active = 'grid';
@@ -48,7 +47,7 @@ export const runExamples = () => {
 
     // FXAA
     const target = texture(gl);
-    const [enableTarget, disableTarget] = renderTargetContext(gl, target, width, height);
+    const fb = renderTarget(gl, target, width, height);
     setupFXAA(gl);
 
     startLoop(
@@ -58,9 +57,9 @@ export const runExamples = () => {
             CompPhysicsRun(dt);
         },
         (t) => {
-            enableTarget();
-            CompRenderRun(gl, cam.mat(), cam.eye, width / height, t);
-            disableTarget();
+            enableRenderTarget(gl, fb, width, height);
+            CompRenderRun(gl, cam.mat(), cam.eye, width / height, t, fb);
+            disableRenderTarget(gl);
 
             bindTexture(gl, target);
             renderFXAA(gl);
