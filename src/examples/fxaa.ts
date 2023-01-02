@@ -16,7 +16,7 @@ out vec2 v_rgbM;
 out vec2 vFragCoord;
 
 void main() {
-    vFragCoord = (aTex / 2.) * uRes;
+    vFragCoord = aTex * uRes;
 
     vec2 inverseVP = 1.0 / uRes.xy;
     v_rgbNW = (vFragCoord + vec2(-1.0, -1.0)) * inverseVP;
@@ -24,7 +24,7 @@ void main() {
     v_rgbSW = (vFragCoord + vec2(-1.0, 1.0)) * inverseVP;
     v_rgbSE = (vFragCoord + vec2(1.0, 1.0)) * inverseVP;
     v_rgbM = vec2(vFragCoord * inverseVP);
-    gl_Position = vec4(aTex - 1., 0., 1.);
+    gl_Position = vec4(aTex * 2. - 1., 1., 1.);
 }`;
 
 const frag = makeShader`

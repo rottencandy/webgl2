@@ -54,8 +54,8 @@ export const runExamples = () => {
     const target1 = texture(gl);
     const [fb1] = renderTarget(gl, target1, width, height);
     const target2 = texture(gl);
-    const [ppVAO, ppDraw] = mesh(gl, Plane(2), [[0, 2]]);
     const [fb2] = renderTarget(gl, target2, width, height);
+    const [ppVAO, ppDraw] = mesh(gl, Plane(1), [[0, 2]]);
 
     startLoop(
         (dt) => {
@@ -64,8 +64,9 @@ export const runExamples = () => {
             CompPhysicsRun(dt);
         },
         (t) => {
+            const mat = cam.mat();
             enableRenderTarget(gl, fb1, width, height);
-            CompRenderRun(gl, cam.mat(), cam.eye, width / height, t, fb1);
+            CompRenderRun(gl, mat, cam.eye, width / height, t, fb1);
             disableRenderTarget(gl);
             bindVAO(gl, ppVAO);
             CompPostProcessRun(gl, fb1, fb2, target1, target2, ppDraw, width, height);
