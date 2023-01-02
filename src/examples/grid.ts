@@ -1,6 +1,6 @@
 import { mat4 } from 'gl-matrix';
 import { CompRender } from '../engine/components/render';
-import { mesh, shaderProgram, uniformFns, useProgram } from '../engine/webgl2-stateless';
+import { bindVAO, mesh, shaderProgram, uniformFns, useProgram } from '../engine/webgl2-stateless';
 import { Plane } from '../vertices';
 
 const frag = `#version 300 es
@@ -60,8 +60,9 @@ void main() {
     gl_Position = vec4(p, 0., 1.);
 }`;
 
-let prg: WebGLProgram, draw: () => void, uniform: any, init = false;
+let vao: WebGLVertexArrayObject, prg: WebGLProgram, draw: () => void, uniform: any, init = false;
 const render = (gl: WebGL2RenderingContext, mat: mat4) => {
+    bindVAO(gl, vao);
     useProgram(gl, prg);
     uniform('uMat').m4fv(mat);
     draw();
@@ -73,7 +74,7 @@ export const setup = (gl: WebGL2RenderingContext) => {
     init = true;
     prg = shaderProgram(gl, vert, frag);
     uniform = uniformFns(gl, prg);
-    [, draw] = mesh(gl, Plane(2), [[0, 2]]);
+    [vao, draw] = mesh(gl, Plane(2), [[0, 2]]);
 };
 
 export const teardown = () => {
