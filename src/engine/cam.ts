@@ -1,7 +1,6 @@
 // for gl-matrix types
 ///<reference path="../global.d.ts" />
-import { mat4, vec3 } from 'gl-matrix';
-import {
+import mat4, {
     clone as m4clone,
     create as m4create,
     lookAt as m4lookAt,
@@ -9,7 +8,7 @@ import {
     ortho as m4ortho,
     perspective as m4perspective,
 } from 'gl-matrix/mat4';
-import {
+import vec3, {
     create as v3create,
     set as v3set,
     scale as v3scale,

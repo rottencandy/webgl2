@@ -23,6 +23,8 @@ export const FPSCam3D = (speed = .01, x = 0, y = 0, z = 20, aspect = 400 / 300) 
         mat: () => cam.recalculate().matrix,
         eye: cam.eye,
         lookDir: cam.lookDir,
+        viewMat: cam.viewMatrix,
+        projectionMat: cam.projectionMatrix,
     };
 };
 
