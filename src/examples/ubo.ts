@@ -64,21 +64,26 @@ const fragment2 = makeShader`
 
 const render = (gl: WebGL2RenderingContext, mat: mat4) => {
     bindVAO(gl, vao);
-    ubo.set([
-        // uColor
-        new Float32Array([.4, .5, .3]),
-        // uPos
-        new Float32Array([0, 0, 0, 0]),
+    if (t++ % 100 ===0) {
+        ubo.set([
+            // uColor
+            new Float32Array([Math.random(), .5, .3]),
+            // uPos
+            new Float32Array([0, 0, 0, 0]),
+            // uMat
+            mat,
+        ]);
+    } else {
         // uMat
-        mat,
-    ]);
+        ubo.setSub(2, mat);
+    }
     useProgram(gl, prg1);
     draw();
     useProgram(gl, prg2);
     draw();
 };
 
-let prg1, prg2, vao, draw, ubo, init = false;
+let prg1, prg2, vao, draw, ubo, init = false, t = 0;
 export const setup = (gl: WebGL2RenderingContext) => {
     CompRender.push(render);
     if (init) return;

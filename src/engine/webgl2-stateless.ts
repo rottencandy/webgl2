@@ -187,6 +187,10 @@ export const UBO = (gl: GL, name: string, prg: WebGLProgram, vars: string[], loc
                 gl.bufferSubData(GL_UNIFORM_BUFFER, offsets[i], data[i], loc);
             }
         },
+        setSub(idx: number, data: ArrayBufferView) {
+            bindBuffer(gl, buf, GL_UNIFORM_BUFFER);
+            gl.bufferSubData(GL_UNIFORM_BUFFER, offsets[idx], data, loc);
+        },
     };
 };
 

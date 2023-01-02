@@ -107,6 +107,7 @@ type UBOState = {
     bindPrg: (p: WebGLProgram) => UBOState;
     bind: () => UBOState;
     set: (data: ArrayBufferView[]) => UBOState;
+    setSub: (index: number, data: ArrayBufferView) => UBOState;
 };
 
 type BufferState = {
@@ -390,6 +391,11 @@ export const useExistingGLContext = (
                     for (let i = 0; i < offsets.length; i++) {
                         gl.bufferSubData(GL_UNIFORM_BUFFER, offsets[i], data[i], loc);
                     }
+                    return thisObj;
+                },
+                setSub(idx: number, data: ArrayBufferView) {
+                    thisObj.bind();
+                    gl.bufferSubData(GL_UNIFORM_BUFFER, offsets[idx], data, loc);
                     return thisObj;
                 },
             };
