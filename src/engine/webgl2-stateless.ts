@@ -452,7 +452,7 @@ export const renderTarget = (
     height: number,
     internalFormat: GLConst = GL_RGBA,
     format: GLConst = GL_RGBA,
-)  => {
+): [WebGLFramebuffer, WebGLTexture] => {
     const fb = gl.createFramebuffer() as WebGLFramebuffer;
     setTexData(gl, tex, null, GL_TEXTURE_2D, 0, internalFormat, width, height, 0, format);
     setTextureFilter(gl);
@@ -477,7 +477,7 @@ export const renderTarget = (
     );
     disableRenderTarget(gl);
 
-    return fb;
+    return [fb, depth];
 };
 
 export const enableRenderTarget = (gl: GL, fb: WebGLFramebuffer, width: number, height: number) => {

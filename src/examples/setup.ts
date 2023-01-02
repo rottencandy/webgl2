@@ -52,10 +52,10 @@ export const runExamples = () => {
 
     // setup post process framebuffers & attribs
     const target1 = texture(gl);
-    const fb1 = renderTarget(gl, target1, width, height);
+    const [fb1] = renderTarget(gl, target1, width, height);
     const target2 = texture(gl);
-    const fb2 = renderTarget(gl, target2, width, height);
     const [ppVAO, ppDraw] = mesh(gl, Plane(2), [[0, 2]]);
+    const [fb2] = renderTarget(gl, target2, width, height);
 
     startLoop(
         (dt) => {

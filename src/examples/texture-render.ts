@@ -72,7 +72,7 @@ export const setup = (gl: WebGL2RenderingContext) => {
     tex = loadTextureImage(gl, texture(gl), img);
 
     target = texture(gl);
-    fb = renderTarget(gl, target, gl.canvas.width, gl.canvas.height);
+    [fb] = renderTarget(gl, target, gl.canvas.width, gl.canvas.height);
 };
 
 export const teardown = () => {
