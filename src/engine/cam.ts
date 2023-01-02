@@ -71,7 +71,6 @@ const Camera = (isOrtho: boolean, ...props: number[]): CamState => {
     const t_move = v3create();
     const t_side = v3create();
     const t_dir = v3create();
-    const t_view = m4create();
     const t_target = v3create();
 
     const thisObj: CamState = {
@@ -120,8 +119,8 @@ const Camera = (isOrtho: boolean, ...props: number[]): CamState => {
             return thisObj;
         },
         recalculate() {
-            m4lookAt(t_view, pos, v3add(t_target, pos, front), up);
-            m4mul(thisObj.matrix, projectionMat, t_view);
+            m4lookAt(viewMat, pos, v3add(t_target, pos, front), up);
+            m4mul(thisObj.matrix, projectionMat, viewMat);
             return thisObj;
         },
         matrix: m4clone(projectionMat),
