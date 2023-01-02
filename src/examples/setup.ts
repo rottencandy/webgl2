@@ -2,15 +2,16 @@ import { startLoop } from "../engine/loop";
 import { CompInputRun, setupKeyListener } from "../engine/components/input";
 import { CompPhysicsRun } from "../engine/components/physics";
 import { CompRenderRun } from "../engine/components/render";
-import { bindTexture, createGLContext, disableRenderTarget, enableRenderTarget, renderTarget, resize, texture } from "../engine/webgl2-stateless";
+import { createGLContext, disableRenderTarget, enableRenderTarget, renderTarget, resize, texture } from "../engine/webgl2-stateless";
 import { FPSCam3D } from "./utils/views";
 import { setup as setupGrid, teardown as teardownGrid } from "./grid";
 import { setup as setupLight, teardown as teardownLight } from "./lightning";
 import { setup as setupUbo, teardown as teardownUbo } from "./ubo";
-import { setup as setupFXAA, render as renderFXAA } from "./fxaa";
+import { setup as setupFXAA } from "./fxaa";
 import { setup as setupRenderTex, teardown as teardownRenderTex } from "./texture-render";
 import { addToPanel } from "../debug";
 import { $ } from "../globals";
+import { CompPostProcessRun } from "../engine/components/post-process";
 
 const scenes
 :{ [key: string]: { setup: (gl: WebGL2RenderingContext) => void, teardown: () => void } } = {
@@ -45,10 +46,14 @@ export const runExamples = () => {
         ...Object.keys(scenes).map(k => $('option', { value: k }, k))),
     );
 
-    // FXAA
-    const target = texture(gl);
-    const fb = renderTarget(gl, target, width, height);
+    // Post processing
     setupFXAA(gl);
+
+    // setup post process framebuffers
+    const target1 = texture(gl);
+    const fb1 = renderTarget(gl, target1, width, height);
+    const target2 = texture(gl);
+    const fb2 = renderTarget(gl, target2, width, height);
 
     startLoop(
         (dt) => {
@@ -57,12 +62,11 @@ export const runExamples = () => {
             CompPhysicsRun(dt);
         },
         (t) => {
-            enableRenderTarget(gl, fb, width, height);
-            CompRenderRun(gl, cam.mat(), cam.eye, width / height, t, fb);
+            enableRenderTarget(gl, fb1, width, height);
+            CompRenderRun(gl, cam.mat(), cam.eye, width / height, t, fb1);
             disableRenderTarget(gl);
 
-            bindTexture(gl, target);
-            renderFXAA(gl);
+            CompPostProcessRun(gl, fb1, fb2, target1, target2, width, height);
         },
     );
 };
