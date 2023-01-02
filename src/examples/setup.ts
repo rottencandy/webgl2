@@ -2,7 +2,7 @@ import { startLoop } from "../engine/loop";
 import { CompInputRun, setupKeyListener } from "../engine/components/input";
 import { CompPhysicsRun } from "../engine/components/physics";
 import { CompRenderRun } from "../engine/components/render";
-import { createGLContext, disableRenderTarget, enableRenderTarget, renderTarget, resize, texture } from "../engine/webgl2-stateless";
+import { bindVAO, createGLContext, disableRenderTarget, enableRenderTarget, mesh, renderTarget, resize, texture } from "../engine/webgl2-stateless";
 import { FPSCam3D } from "./utils/views";
 import { setup as setupGrid, teardown as teardownGrid } from "./grid";
 import { setup as setupLight, teardown as teardownLight } from "./lightning";
@@ -12,6 +12,7 @@ import { setup as setupRenderTex, teardown as teardownRenderTex } from "./textur
 import { addToPanel } from "../debug";
 import { $ } from "../globals";
 import { CompPostProcessRun } from "../engine/components/post-process";
+import { Plane } from "../vertices";
 
 const scenes
 :{ [key: string]: { setup: (gl: WebGL2RenderingContext) => void, teardown: () => void } } = {
@@ -49,11 +50,12 @@ export const runExamples = () => {
     // Post processing
     setupFXAA(gl);
 
-    // setup post process framebuffers
+    // setup post process framebuffers & attribs
     const target1 = texture(gl);
     const fb1 = renderTarget(gl, target1, width, height);
     const target2 = texture(gl);
     const fb2 = renderTarget(gl, target2, width, height);
+    const [ppVAO, ppDraw] = mesh(gl, Plane(2), [[0, 2]]);
 
     startLoop(
         (dt) => {
@@ -65,8 +67,8 @@ export const runExamples = () => {
             enableRenderTarget(gl, fb1, width, height);
             CompRenderRun(gl, cam.mat(), cam.eye, width / height, t, fb1);
             disableRenderTarget(gl);
-
-            CompPostProcessRun(gl, fb1, fb2, target1, target2, width, height);
+            bindVAO(gl, ppVAO);
+            CompPostProcessRun(gl, fb1, fb2, target1, target2, ppDraw, width, height);
         },
     );
 };

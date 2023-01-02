@@ -1,7 +1,6 @@
 import { CompPostProcess } from "../engine/components/post-process";
-import { bindVAO, mesh, shaderProgram, uniformFns, useProgram } from "../engine/webgl2-stateless";
+import { shaderProgram, uniformFns, useProgram } from "../engine/webgl2-stateless";
 import { makeShader } from "../globals";
-import { Plane } from "../vertices";
 
 // Source: https://github.com/mattdesl/glsl-fxaa
 const vert = makeShader`
@@ -105,19 +104,21 @@ void main() {
     color = fxaa(uTex, vFragCoord, uRes, v_rgbNW, v_rgbNE, v_rgbSW, v_rgbSE, v_rgbM);
 }`;
 
-let vao, draw, resU, prg, init = false;
+let resU, prg, init = false;
 export const setup = (gl: WebGL2RenderingContext) => {
     CompPostProcess.push(render);
     if (init) return;
     init = true;
-    [vao, draw] = mesh(gl, Plane(2), [[0, 2]]);
     prg = shaderProgram(gl, vert, frag);
     resU = uniformFns(gl, prg)('uRes');
 };
 
-const render = (gl: WebGL2RenderingContext) => {
-    bindVAO(gl, vao);
+const render = (gl: WebGL2RenderingContext, draw: () => void) => {
     useProgram(gl, prg);
     resU.u2f(gl.canvas.width, gl.canvas.height);
     draw();
+};
+
+export const teardown = () => {
+    CompPostProcess.splice(CompPostProcess.indexOf(render));
 };
