@@ -65,11 +65,11 @@ export const runExamples = () => {
         },
         (t) => {
             const mat = cam.mat();
-            enableRenderTarget(gl, fb1, width, height);
+            enableRenderTarget(gl, fb1);
             CompRenderRun(gl, mat, cam.eye, width / height, t, fb1);
             disableRenderTarget(gl);
             bindVAO(gl, ppVAO);
-            CompPostProcessRun(gl, fb1, fb2, target1, target2, ppDraw, width, height);
+            CompPostProcessRun(gl, fb1, fb2, target1, target2, ppDraw);
         },
     );
 };

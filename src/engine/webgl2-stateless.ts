@@ -53,7 +53,7 @@ export const createGLContext = (
     width = 400,
     height = 300,
 ): GL => {
-    const gl = canvas.getContext('webgl2', { antialias: false }) as WebGL2RenderingContext;
+    const gl = canvas.getContext('webgl2', { antialias: false }) as GL;
     if (!gl)
         alert('Could not get gl context');
 
@@ -73,29 +73,22 @@ export const createGLContext = (
 };
 
 /** Clear target */
-export const clear = (gl: GL): GL => {
+export const clear = (gl: GL) => {
     gl.clearColor(.1, .1, .1, 1.);
     gl.clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    return gl;
 };
 
 /** Draw to target */
-export const draw = (gl: GL, count: number, mode: GLConst = GL_TRIANGLES, offset = 0): GL => {
+export const draw = (gl: GL, count: number, mode: GLConst = GL_TRIANGLES, offset = 0) => {
     gl.drawArrays(mode, offset, count);
-    return gl;
 };
 
 /** Draw using elements buffer */
-export const drawElements = (gl: GL, count: number, mode: GLConst = GL_TRIANGLES, offset = 0): GL => {
+export const drawElements = (gl: GL, count: number, mode: GLConst = GL_TRIANGLES, offset = 0) => {
     gl.drawElements(mode, count, GL_UNSIGNED_SHORT, offset);
-    return gl;
 };
 
-const createShader = (
-    gl: WebGL2RenderingContext,
-    type: number,
-    source: string,
-) => {
+const createShader = (gl: GL, type: number, source: string) => {
     const shader = gl.createShader(type) as WebGLShader;
     gl.shaderSource(shader, source);
     gl.compileShader(shader);
@@ -129,7 +122,7 @@ export const useProgram = (gl: GL, prg: WebGLProgram) => {
 };
 
 const uniformSetterFns = (
-    gl: WebGL2RenderingContext,
+    gl: GL,
     prg: WebGLProgram
 ) => (name: string) => {
     const loc = gl.getUniformLocation(prg, name) as WebGLUniformLocation;
@@ -196,7 +189,6 @@ export const UBO = (gl: GL, name: string, prg: WebGLProgram, vars: string[], loc
 
 export const unbindUBO = (gl: GL) => {
     gl.bindBuffer(GL_UNIFORM_BUFFER, null);
-    return gl;
 };
 
 export const uniformFns = (gl: GL, prg: WebGLProgram) => uniformSetterFns(gl, prg);
@@ -215,7 +207,6 @@ export const bindBuffer = (gl: GL, buf: WebGLBuffer, target: GLConst = GL_ARRAY_
 
 export const unbindBuffer = (gl: GL, target: GLConst = GL_ARRAY_BUFFER) => {
     gl.bindBuffer(target, null);
-    return gl;
 };
 
 /* binds buffer automatically */
@@ -247,7 +238,6 @@ export const bindVAO = (gl: GL, vao: WebGLVertexArrayObject) => {
 
 export const unbindVAO = (gl: GL) => {
     gl.bindVertexArray(null);
-    return gl;
 };
 
 /* binds VAO automatically */
@@ -291,16 +281,14 @@ export const bindTexture = (gl: GL, tex: WebGLTexture, target: GLConst = GL_TEXT
 };
 
 // TODO find out if filter is mandatory (use gl_nearest always)
-export const setTextureFilter = (gl: GL, target: GLConst = GL_TEXTURE_2D, type: GLConst = GL_NEAREST): GL => {
+export const setTextureFilter = (gl: GL, target: GLConst = GL_TEXTURE_2D, type: GLConst = GL_NEAREST) => {
     gl.texParameteri(target, GL_TEXTURE_MIN_FILTER, type);
     gl.texParameteri(target, GL_TEXTURE_MAG_FILTER, type);
-    return gl;
 };
 
-export const setTextureWrap = (gl: GL, target: GLConst = GL_TEXTURE_2D, type: GLConst = GL_CLAMP_TO_EDGE): GL => {
+export const setTextureWrap = (gl: GL, target: GLConst = GL_TEXTURE_2D, type: GLConst = GL_CLAMP_TO_EDGE) => {
     gl.texParameteri(target, GL_TEXTURE_WRAP_S, type);
     gl.texParameteri(target, GL_TEXTURE_WRAP_T, type);
-    return gl;
 };
 
 /**
@@ -403,7 +391,7 @@ export const mesh = (
     /** VAO */
     vao: WebGLVertexArrayObject,
     /** Loaded draw function */
-    draw: () => GL,
+    draw: () => void,
 ] => {
     const vao = VAO(gl);
     setBufferData(gl, buffer(gl), data);
@@ -427,7 +415,7 @@ export const resize = (
     canvas: HTMLCanvasElement,
     width: number,
     height: number,
-): GL => {
+) => {
     const ratio = deviceScaleRatio(width, height);
     canvas.width = width;
     canvas.height = height;
@@ -437,7 +425,6 @@ export const resize = (
     // display note if device is in potrait
     (document.getElementById('d') as HTMLElement).style.display =
         window.innerWidth < window.innerHeight ? 'block' : 'none';
-    return gl;
 };
 
 /**
@@ -448,8 +435,8 @@ export const resize = (
 export const renderTarget = (
     gl: GL,
     tex: WebGLTexture,
-    width: number,
-    height: number,
+    width = gl.canvas.width,
+    height = gl.canvas.height,
     internalFormat: GLConst = GL_RGBA,
     format: GLConst = GL_RGBA,
 ): [WebGLFramebuffer, WebGLTexture] => {
@@ -480,9 +467,9 @@ export const renderTarget = (
     return [fb, depth];
 };
 
-export const enableRenderTarget = (gl: GL, fb: WebGLFramebuffer, width: number, height: number) => {
+export const enableRenderTarget = (gl: GL, fb: WebGLFramebuffer, width = gl.canvas.width, height = gl.canvas.height) => {
     gl.bindFramebuffer(GL_FRAMEBUFFER, fb);
-    gl.viewport(0, 0, width as number, height as number);
+    gl.viewport(0, 0, width, height);
 };
 
 export const disableRenderTarget = (gl: GL) => {

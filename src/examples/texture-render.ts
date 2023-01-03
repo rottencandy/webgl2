@@ -39,11 +39,11 @@ const render = (gl: WebGL2RenderingContext, mat: mat4, _eye, _aspect, _t, parent
     uniform('uPos').u4f(0, 0, 0, 0);
     uniform('uMat').m4fv(mat);
 
-    enableRenderTarget(gl, fb, gl.canvas.width, gl.canvas.height);
+    enableRenderTarget(gl, fb);
     bindTexture(gl, tex);
     clear(gl);
     draw();
-    enableRenderTarget(gl, parentFB, gl.canvas.width, gl.canvas.height);
+    enableRenderTarget(gl, parentFB);
 
     uniform('uMat').m4fv(mat);
 
