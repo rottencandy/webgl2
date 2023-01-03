@@ -168,6 +168,7 @@ export const UBO = (gl: GL, name: string, prg: WebGLProgram, vars: string[], loc
     gl.uniformBlockBinding(prg, gl.getUniformBlockIndex(prg, name), loc);
 
     return {
+        buf,
         bindPrg(p: WebGLProgram) {
             gl.uniformBlockBinding(prg, gl.getUniformBlockIndex(p, name), loc);
         },
@@ -294,6 +295,7 @@ export const setTextureWrap = (gl: GL, target: GLConst = GL_TEXTURE_2D, type: GL
 /**
  * Binds texture automatically.
  * Use `loadTextureImage` if loading image with strings.
+ * TODO: turn this into async?
  */
 export const setTextureImage = (gl: GL, tex: WebGLTexture, src: TexImageSource, level = 0, target: GLConst = GL_TEXTURE_2D) => {
     bindTexture(gl, tex, target);
