@@ -22,3 +22,8 @@ declare module 'gl-matrix/mat3' {
 	import { mat3 } from 'gl-matrix';
 	export = mat3;
 }
+
+declare module '*.png' {
+    const data: string;
+	export = data;
+}

@@ -7,6 +7,7 @@ import { FPSCam3D } from "./utils/views";
 import { setup as setupGrid, teardown as teardownGrid } from "./grid";
 import { setup as setupLight, teardown as teardownLight } from "./lightning";
 import { setup as setupUbo, teardown as teardownUbo } from "./ubo";
+import { setup as setupTex, teardown as teardownTex } from "./texture";
 import { setup as setupFXAA } from "./fxaa";
 import { setup as setupRenderTex, teardown as teardownRenderTex } from "./texture-render";
 import { addToPanel } from "../debug";
@@ -19,6 +20,7 @@ const scenes
     grid: { setup: setupGrid, teardown: teardownGrid },
     lightning: { setup: setupLight, teardown: teardownLight },
     ubo: { setup: setupUbo, teardown: teardownUbo },
+    texture: { setup: setupTex, teardown: teardownTex },
     renderTex: { setup: setupRenderTex, teardown: teardownRenderTex },
 };
 let active = 'grid';
@@ -68,6 +70,7 @@ export const runExamples = () => {
             enableRenderTarget(gl, fb1);
             CompRenderRun(gl, mat, cam.eye, width / height, t, fb1);
             disableRenderTarget(gl);
+
             bindVAO(gl, ppVAO);
             CompPostProcessRun(gl, fb1, fb2, target1, target2, ppDraw);
         },

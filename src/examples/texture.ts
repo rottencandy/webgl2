@@ -1,14 +1,11 @@
-import { createGLContext } from '../engine/webgl2';
+import { mat4 } from 'gl-matrix';
+///<reference path="../global.d.ts" />
+import { CompRender } from '../engine/components/render';
+import { bindTexture, bindVAO, buffer, loadTextureImage, mesh, setBufferData, setVAOPtr, shaderProgram, texture, uniformFns, useProgram } from '../engine/webgl2-stateless';
 import { makeShader } from '../globals';
 import { Cube, cubeTexCoords } from '../vertices';
-import { FPSCam3D } from './utils/views';
 
 import img from './assets/wood.png';
-import { setupKeyListener } from '../engine/input';
-
-const ctx = createGLContext(document.getElementById('c') as any, 300, 300);
-(onresize = ctx.resize)();
-setupKeyListener(document.getElementById('c') as any, true);
 
 /**
 * Texture vertex
@@ -16,11 +13,11 @@ setupKeyListener(document.getElementById('c') as any, true);
 const vertexTex = makeShader`
     layout(location=0)in vec4 aPos;
     layout(location=1)in vec2 aTex;
-    uniform mat4 uMat;
+    uniform mat4 uVP;
     out vec2 vTex;
 
     void main() {
-        gl_Position = uMat * aPos;
+        gl_Position = uVP * aPos;
         vTex = aTex;
     }`;
 
@@ -36,35 +33,34 @@ const fragmentTex = makeShader`
         outColor = texture(uTex, vTex);
     }`;
 
-const shader = ctx.shader(
-    vertexTex,
-    fragmentTex,
-).use();
+const render = (gl: WebGL2RenderingContext, mat: mat4) => {
+    bindVAO(gl, vao);
+    useProgram(gl, prg);
+    bindTexture(gl, tex);
 
-const { vao, draw } = ctx.createMesh(
-    Cube(10),
-    // aPos
-    [[0, 3, 24]]
-);
-
-// aTex
-ctx.buffer().bind().setData(cubeTexCoords);
-vao.setPtr(1, 2);
-ctx.texture().setImage(img);
-
-const cam = FPSCam3D(.01, 0, 0, 20, 1);
-
-export const update = (dt: number) => {
-    cam.update(dt);
+    uniform('uPos').u4f(0, 0, 0, 0);
+    uniform('uVP').m4fv(mat);
+    draw();
 };
 
-export const render = () => {
-    ctx.clear();
+let prg: WebGLProgram, vao: WebGLVertexArrayObject, tex: WebGLTexture, uniform, draw: () => void, init = false;
+export const setup = (gl: WebGL2RenderingContext) => {
+    CompRender.push(render);
+    if (init) return;
+    init = true;
 
-    vao.bind();
-    shader.use();
+    [ vao, draw ] = mesh(gl, Cube(10), [[0, 3, 24]]);
 
-    shader.uniform`uPos`.u4f(0, 0, 0, 0);
-    shader.uniform`uMat`.m4fv(cam.mat());
-    draw();
+    // aTex
+    setBufferData(gl, buffer(gl), cubeTexCoords);
+    setVAOPtr(gl, vao, 1, 2);
+    tex = texture(gl);
+    loadTextureImage(gl, tex, img);
+
+    prg = shaderProgram(gl, vertexTex, fragmentTex);
+    uniform = uniformFns(gl, prg);
+};
+
+export const teardown = () => {
+    CompRender.splice(CompRender.indexOf(render));
 };
