@@ -1,5 +1,6 @@
-import { mat4 } from 'gl-matrix';
 ///<reference path="../global.d.ts" />
+import mat4, { copy as m4copy, create as m4create } from 'gl-matrix/mat4';
+import { CompMotionBlur } from '../engine/components/motion-blur';
 import { CompRender } from '../engine/components/render';
 import { bindTexture, bindVAO, buffer, loadTextureImage, mesh, setBufferData, setVAOPtr, shaderProgram, texture, uniformFns, useProgram } from '../engine/webgl2-stateless';
 import { makeShader } from '../globals';
@@ -33,19 +34,54 @@ const fragmentTex = makeShader`
         outColor = texture(uTex, vTex);
     }`;
 
+/**
+* Velocity buffer
+*/
+const vertexVel = makeShader`
+    layout(location=0)in vec4 aPos;
+    uniform mat4 uVP;
+    uniform mat4 uPrevVP;
+    out vec4 vPos;
+    out vec4 vPrevPos;
+
+    void main() {
+        vPos = uVP * aPos;
+        vPrevPos = uPrevVP * aPos;
+        gl_Position = vPos;
+    }`;
+const fragmentVel = makeShader`
+    in vec4 vPos;
+    in vec4 vPrevPos;
+    out uvec2 outVel;
+
+    void main() {
+        vec2 a = vPos.xy / vPos.w;
+        vec2 b = vPrevPos.xy / vPrevPos.w;
+        vec2 outFloat = abs(a - b) * 1000.;
+        outVel = uvec2(int(outFloat.x), int(outFloat.y));
+    }`;
+
 const render = (gl: WebGL2RenderingContext, mat: mat4) => {
     bindVAO(gl, vao);
     useProgram(gl, prg);
     bindTexture(gl, tex);
-
-    uniform('uPos').u4f(0, 0, 0, 0);
     uniform('uVP').m4fv(mat);
     draw();
 };
 
-let prg: WebGLProgram, vao: WebGLVertexArrayObject, tex: WebGLTexture, uniform, draw: () => void, init = false;
+const velocity = (gl: WebGL2RenderingContext, mat: mat4) => {
+    bindVAO(gl, vao);
+    useProgram(gl, velPrg);
+    velUniform('uVP').m4fv(mat);
+    velUniform('uPrevVP').m4fv(prevMat);
+    draw();
+    m4copy(prevMat, mat);
+};
+
+let prg: WebGLProgram, velPrg: WebGLProgram, vao: WebGLVertexArrayObject, tex: WebGLTexture, uniform, velUniform, draw: () => void, init = false, prevMat = m4create();
 export const setup = (gl: WebGL2RenderingContext) => {
     CompRender.push(render);
+    CompMotionBlur.push(velocity);
     if (init) return;
     init = true;
 
@@ -58,7 +94,9 @@ export const setup = (gl: WebGL2RenderingContext) => {
     loadTextureImage(gl, tex, img);
 
     prg = shaderProgram(gl, vertexTex, fragmentTex);
+    velPrg = shaderProgram(gl, vertexVel, fragmentVel);
     uniform = uniformFns(gl, prg);
+    velUniform = uniformFns(gl, velPrg);
 };
 
 export const teardown = () => {
