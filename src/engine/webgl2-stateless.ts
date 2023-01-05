@@ -2,6 +2,7 @@ import {
     GL_ARRAY_BUFFER,
     GL_BLEND,
     GL_CLAMP_TO_EDGE,
+    GL_COLOR,
     GL_COLOR_ATTACHMENT0,
     GL_COLOR_BUFFER_BIT,
     GL_CULL_FACE,
@@ -76,6 +77,12 @@ export const createGLContext = (
 export const clear = (gl: GL) => {
     gl.clearColor(.1, .1, .1, 1.);
     gl.clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+};
+
+/** Clear target */
+export const clearIntDepth = (gl: GL) => {
+    gl.clear(GL_DEPTH_BUFFER_BIT);
+    gl.clearBufferuiv(GL_COLOR, 0, new Uint32Array([0, 0, 0, 1]));
 };
 
 /** Draw to target */
@@ -351,13 +358,21 @@ export const setTexData = (
 /**
  * Only needed when using multiple textures in a single program.
  * Binds texture automatically.
- * Note: Always set correct active texture before setting unit
  */
 export const setTextureUnit = (gl: GL, tex: WebGLTexture, loc: WebGLUniformLocation, unit: number, target: GLConst = GL_TEXTURE_2D) => {
     gl.uniform1i(loc, unit);
     gl.activeTexture(GL_TEXTURE0 + unit);
     bindTexture(gl, tex, target);
+    // reset index once we're done binding
+    gl.activeTexture(GL_TEXTURE0);
     return tex;
+};
+
+/**
+ * Set active texture unit index (0-9) that the next bind call will bind to
+*/
+export const setActiveTextureUnit = (gl: GL, unit: number) => {
+    gl.activeTexture(GL_TEXTURE0 + unit);
 };
 
 type AttribPointers = [
@@ -441,9 +456,10 @@ export const renderTarget = (
     height = gl.canvas.height,
     internalFormat: GLConst = GL_RGBA,
     format: GLConst = GL_RGBA,
+    type: GLConst = GL_UNSIGNED_BYTE,
 ): [WebGLFramebuffer, WebGLTexture] => {
     const fb = gl.createFramebuffer() as WebGLFramebuffer;
-    setTexData(gl, tex, null, GL_TEXTURE_2D, 0, internalFormat, width, height, 0, format);
+    setTexData(gl, tex, null, GL_TEXTURE_2D, 0, internalFormat, width, height, 0, format, type);
     setTextureFilter(gl);
 
     // setup depth texture

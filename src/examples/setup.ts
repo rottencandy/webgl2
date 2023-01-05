@@ -8,12 +8,14 @@ import { setup as setupGrid, teardown as teardownGrid } from "./grid";
 import { setup as setupLight, teardown as teardownLight } from "./lightning";
 import { setup as setupUbo, teardown as teardownUbo } from "./ubo";
 import { setup as setupTex, teardown as teardownTex } from "./texture";
-import { setup as setupFXAA } from "./fxaa";
+import { enable as enableFXAA } from "./fxaa";
 import { setup as setupRenderTex, teardown as teardownRenderTex } from "./texture-render";
 import { addToPanel } from "../debug";
 import { $ } from "../globals";
 import { CompPostProcessRun } from "../engine/components/post-process";
 import { Plane } from "../vertices";
+import { CompMotionBlurRun, enableMotionBlur } from "../engine/components/motion-blur";
+import { GL_RG16UI, GL_RG_INTEGER, GL_UNSIGNED_SHORT } from "../engine/gl-constants";
 
 const scenes
 :{ [key: string]: { setup: (gl: WebGL2RenderingContext) => void, teardown: () => void } } = {
@@ -50,7 +52,6 @@ export const runExamples = () => {
     );
 
     // Post processing
-    setupFXAA(gl);
 
     // setup post process framebuffers & attribs
     const target1 = texture(gl);
@@ -58,6 +59,13 @@ export const runExamples = () => {
     const target2 = texture(gl);
     const [fb2] = renderTarget(gl, target2, width, height);
     const [ppVAO, ppDraw] = mesh(gl, Plane(1), [[0, 2]]);
+
+    const velocityTex = texture(gl);
+    // cannot write to float RG16F textures without extension
+    const [vfb] = renderTarget(gl, velocityTex, width, height, GL_RG16UI, GL_RG_INTEGER, GL_UNSIGNED_SHORT);
+
+    enableMotionBlur(gl, velocityTex);
+    enableFXAA(gl);
 
     startLoop(
         (dt) => {
@@ -70,6 +78,9 @@ export const runExamples = () => {
             enableRenderTarget(gl, fb1);
             CompRenderRun(gl, mat, cam.eye, width / height, t, fb1);
             disableRenderTarget(gl);
+
+            enableRenderTarget(gl, vfb);
+            CompMotionBlurRun(gl, mat);
 
             bindVAO(gl, ppVAO);
             CompPostProcessRun(gl, fb1, fb2, target1, target2, ppDraw);

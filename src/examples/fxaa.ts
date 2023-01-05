@@ -105,7 +105,7 @@ void main() {
 }`;
 
 let resU, prg, init = false;
-export const setup = (gl: WebGL2RenderingContext) => {
+export const enable = (gl: WebGL2RenderingContext) => {
     CompPostProcess.push(render);
     if (init) return;
     init = true;
@@ -119,6 +119,6 @@ const render = (gl: WebGL2RenderingContext, draw: () => void) => {
     draw();
 };
 
-export const teardown = () => {
+export const disable = () => {
     CompPostProcess.splice(CompPostProcess.indexOf(render));
 };
