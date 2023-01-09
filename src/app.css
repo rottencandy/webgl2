@@ -47,6 +47,6 @@ html, body {
     border: 10px solid #ccc;
     top: 0;
     right: 0;
+    background-color: #ccc;
+    cursor: pointer;
 }
-summary { background-color: #ccc; }
-details { background-color: white; }

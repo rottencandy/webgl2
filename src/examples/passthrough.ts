@@ -25,7 +25,7 @@ void main() {
 }`;
 
 let prg: WebGLProgram, init = false;
-export const setup = (gl: WebGL2RenderingContext) => {
+export const enablePassthrough = (gl: WebGL2RenderingContext) => {
     CompPostProcess.push(render);
     if (init) return;
     init = true;
@@ -37,6 +37,6 @@ const render = (gl: WebGL2RenderingContext, draw: () => void) => {
     draw();
 };
 
-export const teardown = () => {
+export const disablePassthrough = () => {
     CompPostProcess.splice(CompPostProcess.indexOf(render));
 };

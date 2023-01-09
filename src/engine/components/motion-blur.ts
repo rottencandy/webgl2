@@ -50,6 +50,12 @@ void main() {
     color /= float(nSamples);
 }`;
 
+const applyMotionBlur = (gl: WebGL2RenderingContext, draw: () => void) => {
+    useProgram(gl, prg);
+    setTextureUnit(gl, velTex, uniform('uVel').loc, 1);
+    draw();
+};
+
 export const enableMotionBlur = (gl: WebGL2RenderingContext, tex: WebGLTexture) => {
     enabled = true;
     if (init) return;
@@ -60,8 +66,7 @@ export const enableMotionBlur = (gl: WebGL2RenderingContext, tex: WebGLTexture) 
     CompPostProcess.push(applyMotionBlur);
 };
 
-export const applyMotionBlur = (gl: WebGL2RenderingContext, draw: () => void) => {
-    useProgram(gl, prg);
-    setTextureUnit(gl, velTex, uniform('uVel').loc, 1);
-    draw();
+export const disableMotionBlur = () => {
+    enabled = false;
+    CompPostProcess.splice(CompPostProcess.indexOf(applyMotionBlur));
 };

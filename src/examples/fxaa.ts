@@ -105,7 +105,13 @@ void main() {
 }`;
 
 let resU, prg, init = false;
-export const enable = (gl: WebGL2RenderingContext) => {
+const render = (gl: WebGL2RenderingContext, draw: () => void) => {
+    useProgram(gl, prg);
+    resU.u2f(gl.canvas.width, gl.canvas.height);
+    draw();
+};
+
+export const enableFXAA = (gl: WebGL2RenderingContext) => {
     CompPostProcess.push(render);
     if (init) return;
     init = true;
@@ -113,12 +119,6 @@ export const enable = (gl: WebGL2RenderingContext) => {
     resU = uniformFns(gl, prg)('uRes');
 };
 
-const render = (gl: WebGL2RenderingContext, draw: () => void) => {
-    useProgram(gl, prg);
-    resU.u2f(gl.canvas.width, gl.canvas.height);
-    draw();
-};
-
-export const disable = () => {
+export const disableFXAA = () => {
     CompPostProcess.splice(CompPostProcess.indexOf(render));
 };
