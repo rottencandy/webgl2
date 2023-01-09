@@ -57,7 +57,8 @@ const fragmentVel = makeShader`
     void main() {
         vec2 a = vPos.xy / vPos.w;
         vec2 b = vPrevPos.xy / vPrevPos.w;
-        vec2 outFloat = abs(a - b) * 1000.;
+        vec2 outFloat = (a - b) * .5 + .5;
+        outFloat *= 1000.;
         outVel = uvec2(int(outFloat.x), int(outFloat.y));
     }`;
 

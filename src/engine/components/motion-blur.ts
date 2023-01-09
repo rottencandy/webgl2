@@ -25,9 +25,9 @@ void main() {
     vUV = aTex;
 }`;
 
+// https://ogldev.org/www/tutorial41/tutorial41.html
 const frag = makeShader`
-#define MAX_SAMPLES 8
-#define INTENSITY 1.
+#define MAX_SAMPLES 4
 
 in vec2 vUV;
 uniform sampler2D uCol;
@@ -37,17 +37,16 @@ out vec4 color;
 void main() {
     vec2 texelSize = 1. / vec2(textureSize(uCol, 0));
     uvec2 intVelocity = texture(uVel, vUV).rg;
-    vec2 velocity = vec2(intVelocity.xy) / 700.;
-    velocity *= INTENSITY;
-    float speed = length(velocity / texelSize);
-    int nSamples = clamp(int(speed), 1, MAX_SAMPLES);
+    vec2 velocity = vec2(intVelocity) / 1000.;
+    velocity = velocity * 2. - 1.;
 
-    color = texture(uCol, vUV);
-    for (int i = 1; i < nSamples; ++i) {
-        vec2 offset = velocity * (float(i) / float(nSamples - 1) - 0.5);
-        color += texture(uCol, vUV + offset);
+    vec2 texP = vUV;
+    color = vec4(0.);
+
+    for (int i = MAX_SAMPLES; i > 0; i--) {
+        color += texture(uCol, texP) * float(i) * .1;
+        texP -= velocity;
     }
-    color /= float(nSamples);
 }`;
 
 const applyMotionBlur = (gl: WebGL2RenderingContext, draw: () => void) => {
