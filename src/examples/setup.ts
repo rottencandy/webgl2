@@ -4,7 +4,7 @@ import { CompPhysicsRun } from "../engine/components/physics";
 import { CompRenderRun } from "../engine/components/render";
 import { bindVAO, createGLContext, disableRenderTarget, enableRenderTarget, mesh, renderTarget, resize, texture } from "../engine/webgl2-stateless";
 import { FPSCam3D } from "./utils/views";
-import { setup as setupGrid, teardown as teardownGrid } from "./grid";
+import { enableGrid, disableGrid } from "./grid";
 import { setup as setupLight, teardown as teardownLight } from "./lightning";
 import { setup as setupUbo, teardown as teardownUbo } from "./ubo";
 import { setup as setupTex, teardown as teardownTex } from "./texture";
@@ -20,13 +20,23 @@ import { GL_RG16UI, GL_RG_INTEGER, GL_UNSIGNED_SHORT } from "../engine/gl-consta
 
 const scenes
 :{ [key: string]: { setup: (gl: WebGL2RenderingContext) => void, teardown: () => void } } = {
-    grid: { setup: setupGrid, teardown: teardownGrid },
     lightning: { setup: setupLight, teardown: teardownLight },
     ubo: { setup: setupUbo, teardown: teardownUbo },
     texture: { setup: setupTex, teardown: teardownTex },
     renderTex: { setup: setupRenderTex, teardown: teardownRenderTex },
 };
-let active = 'grid';
+let active = 'lightning';
+
+const Checkbox = (id: string, name: string, onclick: (v: boolean) => void) => {
+    return $('div', {},
+        $('input', {
+            type: 'checkbox',
+            id,
+            onchange: (e: any) => onclick(e.target.checked),
+        }),
+        $('label', { for: id }, name),
+    );
+};
 
 export const runExamples = () => {
 
@@ -67,26 +77,9 @@ export const runExamples = () => {
                 },
             },
                 ...Object.keys(scenes).map(k => $('option', { value: k }, k))),
-            $('div', {},
-                $('input', {
-                    type: 'checkbox',
-                    id: 'fxaa',
-                    onchange: (e: any) => {
-                        e.target.checked ? enableFXAA(gl) : disableFXAA();
-                    },
-                }),
-                $('label', { for: 'fxaa' }, 'FXAA'),
-            ),
-            $('div', {},
-                $('input', {
-                    type: 'checkbox',
-                    id: 'motionblur',
-                    onchange: (e: any) => {
-                        e.target.checked ? enableMotionBlur(gl, velocityTex) : disableMotionBlur();
-                    },
-                }),
-                $('label', { for: 'motionblur' }, 'Motion Blur'),
-            ),
+            Checkbox('fxaa', 'FXAA', (x) => x ? enableFXAA(gl) : disableFXAA()),
+            Checkbox('grid', 'Grid', (x) => x ? enableGrid(gl) : disableGrid()),
+            Checkbox('motionblur', 'Motion Blur', (x) => x ? enableMotionBlur(gl, velocityTex) : disableMotionBlur()),
          ),
     );
 

@@ -3,6 +3,28 @@ import { CompRender } from '../engine/components/render';
 import { bindVAO, mesh, shaderProgram, uniformFns, useProgram } from '../engine/webgl2-stateless';
 import { Plane } from '../vertices';
 
+const vert = `#version 300 es
+precision lowp float;
+layout(location=0)in vec2 aPos;
+uniform mat4 uMat;
+out vec3 nearP;
+out vec3 farP;
+out mat4 fragMat;
+
+vec3 unproject(float x, float y, float z, mat4 proj) {
+    vec4 point = inverse(proj) * vec4(x, y, z, 1.);
+    return point.xyz / point.w;
+}
+
+void main() {
+    // -1 -> 1
+    vec2 p = aPos - 1.;
+    nearP = unproject(p.x, p.y, 0., uMat);
+    farP = unproject(p.x, p.y, 1., uMat);
+    fragMat = uMat;
+    gl_Position = vec4(p, 0., 1.);
+}`;
+
 const frag = `#version 300 es
 precision lowp float;
 in vec3 nearP;
@@ -34,33 +56,11 @@ void main() {
 
     gl_FragDepth = computeDepth(fragPos3D);
 
-    fragColor = grid(fragPos3D, .5) * step(0., t) * smoothstep(.5, .0, t);
+    fragColor = grid(fragPos3D, .1) * step(0., t) * smoothstep(.5, .0, t);
 }
 `;
 
-const vert = `#version 300 es
-precision lowp float;
-layout(location=0)in vec2 aPos;
-uniform mat4 uMat;
-out vec3 nearP;
-out vec3 farP;
-out mat4 fragMat;
-
-vec3 unproject(float x, float y, float z, mat4 proj) {
-    vec4 point = inverse(proj) * vec4(x, y, z, 1.);
-    return point.xyz / point.w;
-}
-
-void main() {
-    // -1 -> 1
-    vec2 p = aPos - 1.;
-    nearP = unproject(p.x, p.y, 0., uMat);
-    farP = unproject(p.x, p.y, 1., uMat);
-    fragMat = uMat;
-    gl_Position = vec4(p, 0., 1.);
-}`;
-
-let vao: WebGLVertexArrayObject, prg: WebGLProgram, draw: () => void, uniform: any, init = false;
+let vao: WebGLVertexArrayObject, prg: WebGLProgram, draw: () => void, uniform: any, loaded = false;
 const render = (gl: WebGL2RenderingContext, mat: mat4) => {
     bindVAO(gl, vao);
     useProgram(gl, prg);
@@ -68,15 +68,15 @@ const render = (gl: WebGL2RenderingContext, mat: mat4) => {
     draw();
 };
 
-export const setup = (gl: WebGL2RenderingContext) => {
+export const enableGrid = (gl: WebGL2RenderingContext) => {
     CompRender.push(render);
-    if (init) return;
-    init = true;
+    if (loaded) return;
     prg = shaderProgram(gl, vert, frag);
     uniform = uniformFns(gl, prg);
     [vao, draw] = mesh(gl, Plane(2), [[0, 2]]);
+    loaded = true;
 };
 
-export const teardown = () => {
+export const disableGrid = () => {
     CompRender.splice(CompRender.indexOf(render));
 };

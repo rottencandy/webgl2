@@ -27,8 +27,6 @@ void main() {
 
 // https://ogldev.org/www/tutorial41/tutorial41.html
 const frag = makeShader`
-#define MAX_SAMPLES 4
-
 in vec2 vUV;
 uniform sampler2D uCol;
 uniform lowp usampler2D uVel;
@@ -43,7 +41,7 @@ void main() {
     vec2 texP = vUV;
     color = vec4(0.);
 
-    for (int i = MAX_SAMPLES; i > 0; i--) {
+    for (int i = 4; i > 0; i--) {
         color += texture(uCol, texP) * float(i) * .1;
         texP -= velocity;
     }
