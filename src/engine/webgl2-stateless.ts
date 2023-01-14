@@ -129,14 +129,14 @@ export const shaderProgram = (gl: GL, vSource: string, fSource: string) => {
     return prg;
 };
 
-/** @deprecated only for extreme cases,
-* try to use `layout(location=n)` in shader */
-export const getAttribLoc = (gl: GL, prg: WebGLProgram, name: string) => gl.getAttribLocation(prg, name);
-
 export const useProgram = (gl: GL, prg: WebGLProgram) => {
     gl.useProgram(prg);
     return prg;
 };
+
+/** @deprecated only for extreme cases,
+* try to use `layout(location=n)` in shader */
+export const getAttribLoc = (gl: GL, prg: WebGLProgram, name: string) => gl.getAttribLocation(prg, name);
 
 export const getUniformLoc = (gl: GL, prg: WebGLProgram, name: string) => gl.getUniformLocation(prg, name) as WebGLUniformLocation;
 
@@ -406,9 +406,18 @@ type AttribPointers = [
     loc: number,
     /* Points per vertex */
     size: number,
-    /* Points to skip at the end of each vertex, default|0 = size * sizeof(type), tightly packed */
+    /* BYTES of one complete "set" of vertex data row,
+    * default(0) = tightly packed
+    * num * bytesizeof(type)
+    * eg. 6 nums(3v,3n) = 6 floats = 6 * 4 = 24
+    * */
     stride?: number,
-    /* Points to skip at the beginning of each vertex */
+    /* $type no. of BYTES to skip at the beginning of each vertex
+    * default(0) = tightly packed(see above)
+    * GL_FLOAT = 32 bits = 4 bytes
+    * num * sizeof(type),
+    * eg. 3 nums = 3 floats = 3 * 4 = 12
+    * */
     offset?: number,
     /* Data type, default: GL_FLOAT */
     type?: number,
