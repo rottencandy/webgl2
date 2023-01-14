@@ -26,11 +26,23 @@ void main() {
 }`;
 
 // https://ogldev.org/www/tutorial41/tutorial41.html
+// https://holko.pl/2014/07/21/motion-blur/
 const frag = makeShader`
 in vec2 vUV;
 uniform sampler2D uCol;
 uniform lowp usampler2D uVel;
 out vec4 color;
+
+vec4 motionBlur(sampler2D img, vec2 velocity, vec2 uv, int samples) {
+  vec4 sum = vec4(0.0), avg = vec4(0.0);
+  vec2 dc = uv, offset = -velocity;
+  for (int i=0; i < (samples * 2 + 1); i++) {
+      sum += texture(img, dc + offset);
+      offset += velocity / float(samples);
+  }
+  avg = sum / float((samples * 2 + 1));
+  return avg;
+}
 
 void main() {
     vec2 texelSize = 1. / vec2(textureSize(uCol, 0));

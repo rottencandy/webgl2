@@ -46,8 +46,8 @@ vec4 grid(vec3 fragPos3D, float scale) {
 }
 
 float computeDepth(vec3 p) {
-    vec4 clipSpacePos = fragMat * vec4(p.xyz, 1.0);
-    return clipSpacePos.z;
+    vec4 clipSpacePos = fragMat * vec4(p.xyz, 1.);
+    return clipSpacePos.w;
 }
 
 void main() {
