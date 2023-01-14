@@ -95,6 +95,16 @@ export const drawElements = (gl: GL, count: number, mode: GLConst = GL_TRIANGLES
     gl.drawElements(mode, count, GL_UNSIGNED_SHORT, offset);
 };
 
+/** Instanced drawing */
+export const drawInstanced = (gl: GL, first: number, verts: number, instances: number, mode: GLConst = GL_TRIANGLES) => {
+    gl.drawArraysInstanced(mode, first, verts, instances);
+};
+
+/** Instanced elements drawing */
+export const drawElementsInstanced = (gl: GL, count: number, offset: number, instances: number, mode: GLConst = GL_TRIANGLES) => {
+    gl.drawElementsInstanced(mode, count, GL_UNSIGNED_SHORT, offset, instances);
+};
+
 const createShader = (gl: GL, type: number, source: string) => {
     const shader = gl.createShader(type) as WebGLShader;
     gl.shaderSource(shader, source);
@@ -127,6 +137,17 @@ export const useProgram = (gl: GL, prg: WebGLProgram) => {
     gl.useProgram(prg);
     return prg;
 };
+
+export const getUniformLoc = (gl: GL, prg: WebGLProgram, name: string) => gl.getUniformLocation(prg, name) as WebGLUniformLocation;
+
+type Loc = WebGLUniformLocation;
+export const v1fset = (gl: GL, loc: Loc, x: number) => gl.uniform1f(loc, x);
+export const v1iset = (gl: GL, loc: Loc, x: number) => gl.uniform1i(loc, x);
+export const v2fset = (gl: GL, loc: Loc, x: number, y: number) => gl.uniform2f(loc, x, y);
+export const v3fset = (gl: GL, loc: Loc, x: number, y: number, z: number) => gl.uniform3f(loc, x, y, z);
+export const v4fset = (gl: GL, loc: Loc, x: number, y: number, z: number, w: number) => gl.uniform4f(loc, x, y, z, w);
+export const m3fset = (gl: GL, loc: Loc, data: Float32List, transpose = false) => gl.uniformMatrix3fv(loc, transpose, data);
+export const m4fset = (gl: GL, loc: Loc, data: Iterable<number>, transpose = false) => gl.uniformMatrix4fv(loc, transpose, data);
 
 const uniformSetterFns = (
     gl: GL,
@@ -222,6 +243,11 @@ export const setBufferData = (gl: GL, buf: WebGLBuffer, data: BufferSource, targ
     bindBuffer(gl, buf, target);
     gl.bufferData(target, data, mode);
     return buf;
+};
+
+export const setBufferSub = (gl: GL, buf: WebGLBuffer, offset: number, data: BufferSource, target: GLConst = GL_ARRAY_BUFFER) => {
+    bindBuffer(gl, buf, target);
+    gl.bufferSubData(target, offset, data);
 };
 
 /* automatically binds EB */
