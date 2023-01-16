@@ -27,3 +27,18 @@ declare module '*.png' {
     const data: string;
 	export = data;
 }
+
+declare module '*.glsl' {
+    const data: string;
+	export = data;
+}
+
+declare module '*.vert' {
+    const data: string;
+	export = data;
+}
+
+declare module '*.frag' {
+    const data: string;
+	export = data;
+}

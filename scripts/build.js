@@ -1,7 +1,8 @@
-const glslPlugin = require('esbuild-plugin-spglsl');
+import glslPlugin from 'esbuild-plugin-spglsl';
+import esbuild from 'esbuild';
 
-require('esbuild').build({
-    entryPoints: ['src/main.js', 'src/app.css'],
+const ctx = await esbuild.context({
+    entryPoints: ['src/main.ts', 'src/app.css'],
     bundle: true,
     minify: true,
     charset: 'utf8',
@@ -19,4 +20,12 @@ require('esbuild').build({
         //},
     })],
     loader: { '.png': 'dataurl' }
-}).catch(() => process.exit(1))
+});
+
+try {
+    await ctx.rebuild();
+} catch (e) {
+    console.error('Error: ', e);
+    process.exit(1);
+}
+process.exit(0);

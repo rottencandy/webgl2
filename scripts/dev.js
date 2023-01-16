@@ -1,9 +1,8 @@
-const glslPlugin = require('esbuild-plugin-spglsl');
+import glslPlugin from 'esbuild-plugin-spglsl';
+import esbuild from 'esbuild';
 
-require('esbuild').serve({
-    servedir: 'app',
-}, {
-    entryPoints: ['src/main.js', 'src/app.css'],
+const ctx = await esbuild.context({
+    entryPoints: ['src/main.ts', 'src/app.css'],
     bundle: true,
     sourcemap: 'inline',
     charset: 'utf8',
@@ -15,6 +14,13 @@ require('esbuild').serve({
         mangle: false
     })],
     loader: { '.png': 'dataurl' }
-})
-    .then(server => console.log(`Serving at: http://localhost:${server.port}`))
-    .catch(() => process.exit(1));
+});
+
+await ctx.watch();
+const { host, port } = await ctx.serve({ servedir: 'app' });
+await Bun.write(Bun.stdout, `Serving: http://${host}:${port}`);
+
+process.on('SIGINT', async () => {
+    await ctx.dispose();
+    process.exit();
+});
