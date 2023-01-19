@@ -18,10 +18,10 @@ html, body {
 
 /* Canvas */
 #c {
-    left: 0;
-    right: 0;
-    margin: auto;
     position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
 
     /* Pixelate instead of blurring
     image-rendering: -moz-crisp-edges;
@@ -35,9 +35,11 @@ html, body {
 #d {
     display: none;
     position: absolute;
-    bottom: 0;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
     color: green;
-    font: 100 42px sans-serif;
+    font: 100 32px sans-serif;
     text-align: center;
 }
 
