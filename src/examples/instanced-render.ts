@@ -5,11 +5,24 @@ import mat4, {
     rotateX as m4rotatex,
     identity as m4identity,
 } from 'gl-matrix/mat4';
-import { CompRender } from '../engine/components/render';
-import { CompPhysics } from '../engine/components/physics';
-import { bindVAO, buffer, drawElementsInstanced, getUniformLoc, m4fset, mesh, setBufferData, setBufferSub, setVAOPtr, shaderProgram, useProgram } from '../engine/webgl2-stateless';
-import { makeShader } from '../globals';
-import { GL_ARRAY_BUFFER, GL_DYNAMIC_DRAW } from '../engine/gl-constants';
+import { CompRender } from '../components/render';
+import { CompPhysics } from '../components/physics';
+import {
+    bindVAO,
+    buffer,
+    drawElementsInstanced,
+    getUniformLoc,
+    m4fset,
+    makeShader,
+    mesh,
+    setBufferData,
+    setBufferSub,
+    setInstanceDivisor,
+    setVAOPtr,
+    shaderProgram,
+    useProgram
+} from '../core/webgl2-stateless';
+import { GL_ARRAY_BUFFER, GL_DYNAMIC_DRAW } from '../core/gl-constants';
 import { Cube } from '../vertices';
 
 const vert = makeShader`

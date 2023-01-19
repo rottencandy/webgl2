@@ -1,6 +1,7 @@
+// for gl-matrix types
+///<reference path="../global.d.ts" />
 import mat4 from "gl-matrix/mat4";
-import { makeShader } from "../../globals";
-import { clearIntDepth, setTextureUnit, shaderProgram, uniformFns, useProgram } from "../webgl2-stateless";
+import { clearIntDepth, makeShader, setTextureUnit, shaderProgram, uniformFns, useProgram } from "../core/webgl2-stateless";
 import { CompPostProcess } from "./post-process";
 
 let init = false, enabled = false, prg: WebGLProgram, velTex: WebGLTexture, uniform;

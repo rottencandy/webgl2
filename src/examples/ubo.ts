@@ -1,7 +1,6 @@
 import { mat4 } from 'gl-matrix';
-import { CompRender } from '../engine/components/render';
-import { bindVAO, mesh, shaderProgram, UBO, useProgram } from '../engine/webgl2-stateless';
-import { makeShader } from '../globals';
+import { CompRender } from '../components/render';
+import { bindVAO, makeShader, mesh, shaderProgram, UBO, useProgram } from '../core/webgl2-stateless';
 import { Cube } from '../vertices';
 
 /**

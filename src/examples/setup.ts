@@ -1,9 +1,8 @@
-import { startLoop } from "../engine/loop";
-import { CompInputRun, setupKeyListener } from "../engine/components/input";
-import { CompPhysicsRun } from "../engine/components/physics";
-import { CompRenderRun } from "../engine/components/render";
-import { bindVAO, createGLContext, disableRenderTarget, enableRenderTarget, mesh, renderTarget, resize, texture } from "../engine/webgl2-stateless";
-import { FPSCam3D } from "./utils/views";
+import { startLoop } from "../core/loop";
+import { CompInputRun, setupKeyListener } from "../components/input";
+import { CompPhysicsRun } from "../components/physics";
+import { CompRenderRun } from "../components/render";
+import { bindVAO, createGLContext, disableRenderTarget, enableRenderTarget, mesh, renderTarget, resize, texture } from "../core/webgl2-stateless";
 import { enableGrid, disableGrid } from "./grid";
 import { setup as setupLight, teardown as teardownLight } from "./lightning";
 import { setup as setupUbo, teardown as teardownUbo } from "./ubo";
@@ -12,12 +11,12 @@ import { setup as setupInst, teardown as teardownInst } from "./instanced-render
 import { disableFXAA, enableFXAA } from "./fxaa";
 import { enablePassthrough } from "./passthrough";
 import { setup as setupRenderTex, teardown as teardownRenderTex } from "./texture-render";
-import { addToPanel } from "../debug";
-import { $ } from "../globals";
-import { CompPostProcessRun } from "../engine/components/post-process";
+import { $, addToDebugPanel } from "../core/ui";
+import { CompPostProcessRun } from "../components/post-process";
 import { Plane } from "../vertices";
-import { CompMotionBlurRun, disableMotionBlur, enableMotionBlur } from "../engine/components/motion-blur";
-import { GL_RG16UI, GL_RG_INTEGER, GL_UNSIGNED_SHORT } from "../engine/gl-constants";
+import { CompMotionBlurRun, disableMotionBlur, enableMotionBlur } from "../components/motion-blur";
+import { GL_RG16UI, GL_RG_INTEGER, GL_UNSIGNED_SHORT } from "../core/gl-constants";
+import { setupCam } from "./utils/3dcam";
 
 const scenes
 :{ [key: string]: { setup: (gl: WebGL2RenderingContext) => void, teardown: () => void } } = {
@@ -47,7 +46,7 @@ export const runExamples = () => {
     setupKeyListener(canvas, true);
     const gl = createGLContext(canvas, width, height);
     (onresize = () => resize(gl, canvas, width, height))();
-    const cam = FPSCam3D(.01, 0, 5, 20, width / height);
+    const cam = setupCam(.01, 0, 5, 20, width / height);
 
     // Post processing
     // setup post process ping-pong framebuffers & attribs
@@ -65,7 +64,7 @@ export const runExamples = () => {
 
     // UI
     active && scenes[active].setup(gl);
-    addToPanel(
+    addToDebugPanel(
         $('div', {},
             $('label', { for: 'scenes' }, 'Example: '),
             $('select', {
@@ -87,18 +86,17 @@ export const runExamples = () => {
 
     startLoop(
         (dt) => {
-            cam.update(dt);
             CompInputRun(dt);
             CompPhysicsRun(dt);
         },
         (t) => {
-            const mat = cam.mat();
+            cam.recalculate();
             enableRenderTarget(gl, fb1);
-            CompRenderRun(gl, mat, cam.eye, width / height, t, fb1);
+            CompRenderRun(gl, cam.matrix, cam.eye, width / height, t, fb1);
             disableRenderTarget(gl);
 
             enableRenderTarget(gl, vfb);
-            CompMotionBlurRun(gl, mat);
+            CompMotionBlurRun(gl, cam.matrix);
 
             bindVAO(gl, ppVAO);
             CompPostProcessRun(gl, fb1, fb2, target1, target2, ppDraw);

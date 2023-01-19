@@ -1,6 +1,5 @@
-import { CompPostProcess } from "../engine/components/post-process";
-import { shaderProgram, uniformFns, useProgram } from "../engine/webgl2-stateless";
-import { makeShader } from "../globals";
+import { CompPostProcess } from "../components/post-process";
+import { makeShader, shaderProgram, uniformFns, useProgram } from "../core/webgl2-stateless";
 
 // Source: https://github.com/mattdesl/glsl-fxaa
 const vert = makeShader`

@@ -14,7 +14,7 @@ type WatchedKeys = {
     ptrRelativeOffsetY: number,
 };
 
-export const Keys: WatchedKeys = {
+const Keys: WatchedKeys = {
     left: false,
     right: false,
     up: false,
@@ -111,7 +111,7 @@ export const setupKeyListener = (canvas: HTMLCanvasElement, lockPointer: boolean
     });
 };
 
-export const CompInput: ((k: WatchedKeys, dt?: number) => void)[] = [];
+export const CompInput: ((k: WatchedKeys, dt: number) => void)[] = [];
 
 export const CompInputRun = (dt: number) => {
     for (let i = 0; i < CompInput.length; i++) {

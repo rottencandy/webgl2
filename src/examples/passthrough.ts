@@ -1,7 +1,6 @@
 ///<reference path="../global.d.ts" />
-import { CompPostProcess } from "../engine/components/post-process";
-import { shaderProgram, useProgram } from "../engine/webgl2-stateless";
-import { makeShader } from "../globals";
+import { CompPostProcess } from "../components/post-process";
+import { makeShader, shaderProgram, useProgram } from "../core/webgl2-stateless";
 
 const vert = makeShader`
 layout(location=0)in vec2 aTex;

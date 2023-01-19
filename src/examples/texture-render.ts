@@ -1,8 +1,23 @@
 import { mat4 } from 'gl-matrix';
-import { makeShader } from '../globals';
 import { Cube, cubeTexCoords } from '../vertices';
-import { bindTexture, bindVAO, buffer, clear, enableRenderTarget, loadTextureImage, mesh, renderTarget, setBufferData, setVAOPtr, shaderProgram, texture, uniformFns, useProgram } from '../engine/webgl2-stateless';
-import { CompRender } from '../engine/components/render';
+import {
+    bindTexture,
+    bindVAO,
+    buffer,
+    clear,
+    enableRenderTarget,
+    loadTextureImage,
+    makeShader,
+    mesh,
+    renderTarget,
+    setBufferData,
+    setVAOPtr,
+    shaderProgram,
+    texture,
+    uniformFns,
+    useProgram
+} from '../core/webgl2-stateless';
+import { CompRender } from '../components/render';
 import img from './assets/eff.png';
 
 /**

@@ -1,5 +1,5 @@
 import { mat4, vec3 } from 'gl-matrix';
-import { clear } from '../webgl2-stateless';
+import { clear } from '../core/webgl2-stateless';
 
 export const CompRender: ((gl: WebGL2RenderingContext, mat: mat4, eye: vec3, aspect: number, t: number, fb: WebGLFramebuffer) => void)[] = [];
 

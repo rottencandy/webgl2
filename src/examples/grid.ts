@@ -1,6 +1,6 @@
 import { mat4 } from 'gl-matrix';
-import { CompRender } from '../engine/components/render';
-import { bindVAO, mesh, shaderProgram, uniformFns, useProgram } from '../engine/webgl2-stateless';
+import { CompRender } from '../components/render';
+import { bindVAO, mesh, shaderProgram, uniformFns, useProgram } from '../core/webgl2-stateless';
 import { Plane } from '../vertices';
 
 const vert = `#version 300 es

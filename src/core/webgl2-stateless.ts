@@ -42,7 +42,6 @@ import {
     GL_UNSIGNED_SHORT,
     GL_VERTEX_SHADER,
 } from './gl-constants';
-import { deviceScaleRatio } from '../globals';
 
 /** webgl2 context */
 type GL = WebGL2RenderingContext;
@@ -61,7 +60,7 @@ export const createGLContext = (
     canvas.width = width;
     canvas.height = height;
 
-    gl.viewport(0, 0, canvas.width, canvas.height);
+    gl.viewport(0, 0, width, height);
     gl.enable(GL_CULL_FACE);
     gl.enable(GL_DEPTH_TEST);
     gl.enable(GL_BLEND);
@@ -175,6 +174,7 @@ const uniformSetterFns = (
 };
 
 // https://gist.github.com/jialiang/2880d4cc3364df117320e8cb324c2880
+// todo: make this stateless
 export const UBO = (gl: GL, name: string, prg: WebGLProgram, vars: string[], loc = 0) => {
     const blockIndex = gl.getUniformBlockIndex(prg, name);
     const blockSize = gl.getActiveUniformBlockParameter(
@@ -255,6 +255,12 @@ export const setElementBufferData = (gl: GL, buf: WebGLBuffer, data: number[], m
     bindBuffer(gl, buf, GL_ELEMENT_ARRAY_BUFFER);
     gl.bufferData(GL_ELEMENT_ARRAY_BUFFER, new Uint16Array(data), mode);
     return buf;
+};
+
+/* Used for instancing.
+* Specify how many instances each attribute equates to. (default = 1) */
+export const setInstanceDivisor = (gl: GL, loc: number, divisor = 1) => {
+    gl.vertexAttribDivisor(loc, divisor);
 };
 
 /** Create VAO state */
@@ -468,15 +474,15 @@ export const resize = (
     width: number,
     height: number,
 ) => {
-    const ratio = deviceScaleRatio(width, height);
+    const ratio = Math.min(innerWidth / width, innerHeight / height);
     canvas.width = width;
     canvas.height = height;
     canvas.style.width = width * ratio + 'px';
     canvas.style.height = height * ratio + 'px';
-    gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
+    gl.viewport(0, 0, width, height);
     // display note if device is in potrait
     (document.getElementById('d') as HTMLElement).style.display =
-        window.innerWidth < window.innerHeight ? 'block' : 'none';
+        innerWidth < innerHeight ? 'block' : 'none';
 };
 
 /**
@@ -529,3 +535,7 @@ export const disableRenderTarget = (gl: GL) => {
     gl.bindFramebuffer(GL_FRAMEBUFFER, null);
     gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
 };
+
+export const makeShader = (content: TemplateStringsArray) => `#version 300 es
+precision lowp float;
+${content}`;

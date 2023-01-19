@@ -1,9 +1,8 @@
 ///<reference path="../global.d.ts" />
 import mat4, { copy as m4copy, create as m4create } from 'gl-matrix/mat4';
-import { CompMotionBlur } from '../engine/components/motion-blur';
-import { CompRender } from '../engine/components/render';
-import { bindTexture, bindVAO, buffer, loadTextureImage, mesh, setBufferData, setVAOPtr, shaderProgram, texture, uniformFns, useProgram } from '../engine/webgl2-stateless';
-import { makeShader } from '../globals';
+import { CompMotionBlur } from '../components/motion-blur';
+import { CompRender } from '../components/render';
+import { bindTexture, bindVAO, buffer, loadTextureImage, makeShader, mesh, setBufferData, setVAOPtr, shaderProgram, texture, uniformFns, useProgram } from '../core/webgl2-stateless';
 import { Cube, cubeTexCoords } from '../vertices';
 
 import img from './assets/wood.png';

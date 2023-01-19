@@ -1,4 +1,4 @@
-import { bindTexture, disableRenderTarget, enableRenderTarget } from "../webgl2-stateless";
+import { bindTexture, disableRenderTarget, enableRenderTarget } from "../core/webgl2-stateless";
 
 export const CompPostProcess: ((gl: WebGL2RenderingContext, draw: () => void) => void)[] = [];
 
