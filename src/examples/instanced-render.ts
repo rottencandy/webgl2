@@ -53,6 +53,25 @@ const frag = makeShader`
         col = vec4((ambient + diff) * vCol, 1.);
     }`;
 
+let prg: WebGLProgram, vao: WebGLVertexArrayObject, matBuf: WebGLBuffer, init = false;
+let uVP: WebGLUniformLocation;
+const instances = 3;
+const matData = new Float32Array(instances * 16);
+const mats: Float32Array[] = [];
+for (let i = 0; i < instances; i++) {
+    const byteOffset = i * 16 * 4;
+    const numFloats = 16;
+    mats.push(new Float32Array(matData.buffer, byteOffset, numFloats));
+
+    m4identity(mats[i]);
+    m4translate(mats[i], mats[i], [i*10, 0, 0]);
+}
+const colors = [
+    .3, .4, .2, 1,
+    .4, .3, .2, 1,
+    .4, .2, .3, 1,
+];
+
 const update = (dt: number) => {
     for (let i = 0; i < mats.length; i++) {
         m4rotatex(mats[i], mats[i], 1/1e4 * (i+1) * dt);
@@ -66,21 +85,6 @@ const render = (gl: WebGL2RenderingContext, vpMat: mat4) => {
     m4fset(gl, uVP, vpMat);
     drawElementsInstanced(gl, 36, 0, instances);
 };
-
-let prg: WebGLProgram, vao: WebGLVertexArrayObject, matBuf: WebGLBuffer, init = false;
-let uVP: WebGLUniformLocation;
-const instances = 3;
-const matData = new Float32Array(instances * 16);
-const mats: Float32Array[] = [];
-for (let i = 0; i < instances; i++) {
-    const byteOffset = i * 16 * 4;
-    const numFloats = 16;
-    mats.push(new Float32Array(matData.buffer, byteOffset, numFloats));
-}
-for (let i = 0; i < mats.length; i++) {
-    m4identity(mats[i]);
-    m4translate(mats[i], mats[i], [i*10, 0, 0]);
-}
 
 export const setup = (gl: WebGL2RenderingContext) => {
     CompRender.push(render);
@@ -109,16 +113,12 @@ export const setup = (gl: WebGL2RenderingContext) => {
         const offset = i * 16; // 4 floats per row, 4 bytes per float
         setVAOPtr(gl, vao, loc, 4, bytesPerMatrix, offset);
         // this line says this attribute only changes for each 1 instance
-        gl.vertexAttribDivisor(loc, 1);
+        setInstanceDivisor(gl, loc);
     }
 
-    setBufferData(gl, buffer(gl), new Float32Array([
-        .3, .4, .2, 1,
-        .4, .3, .2, 1,
-        .4, .2, .3, 1,
-    ]))
+    setBufferData(gl, buffer(gl), new Float32Array(colors))
     setVAOPtr(gl, vao, 2, 4);
-    gl.vertexAttribDivisor(2, 1);
+    setInstanceDivisor(gl, 2);
 };
 
 export const teardown = () => {
