@@ -8,6 +8,7 @@ import { setup as setupLight, teardown as teardownLight } from "./lightning";
 import { setup as setupUbo, teardown as teardownUbo } from "./ubo";
 import { setup as setupTex, teardown as teardownTex } from "./texture";
 import { setup as setupInst, teardown as teardownInst } from "./instanced-render";
+import { setup as setupRaymarch, teardown as teardownRaymarch } from "./raymarch";
 import { disableFXAA, enableFXAA } from "./fxaa";
 import { enablePassthrough } from "./passthrough";
 import { setup as setupRenderTex, teardown as teardownRenderTex } from "./texture-render";
@@ -25,6 +26,7 @@ const scenes
     texture: { setup: setupTex, teardown: teardownTex },
     renderInst: { setup: setupInst, teardown: teardownInst },
     renderTex: { setup: setupRenderTex, teardown: teardownRenderTex },
+    raymarch: { setup: setupRaymarch, teardown: teardownRaymarch },
 };
 let active = 'lightning';
 

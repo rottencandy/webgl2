@@ -1,35 +1,31 @@
-import { createGLContext } from '../engine/webgl2';
 import { Cube } from '../vertices';
-import { makeShader } from '../globals';
-import { FPSCam3D } from './utils/views';
-import { setupKeyListener } from '../engine/input';
-
-const ctx = createGLContext(document.getElementById('c') as any, 300, 300);
-(onresize = ctx.resize)();
-setupKeyListener(document.getElementById('c') as any, true);
+import { CompRender } from '../components/render';
+import { bindVAO, makeShader, mesh, shaderProgram, uniformFns, useProgram } from '../core/webgl2-stateless';
+import mat4 from 'gl-matrix/mat4';
+import vec3 from 'gl-matrix/vec3';
 
 /**
 * Calculates vertices
 */
 const vertexPos = makeShader`
-    layout(location=0)in vec4 aPos;
-    uniform mat4 uMat;
-    uniform vec4 uPos;
+layout(location=0)in vec4 aPos;
+uniform mat4 uMat;
+uniform vec4 uPos;
 
-    void main() {
-        gl_Position = uMat * (uPos + aPos);
-    }`;
+void main() {
+    gl_Position = uMat * (uPos + aPos);
+}`;
 
 /**
 * Static light color
 */
 const fragmentStatic = makeShader`
-    uniform vec3 uColor;
-    out vec4 outColor;
+uniform vec3 uColor;
+out vec4 outColor;
 
-    void main() {
-        outColor = vec4(uColor, 1.);
-    }`;
+void main() {
+    outColor = vec4(uColor, 1.);
+}`;
 
 const frag = `#version 300 es
 precision lowp float;
@@ -87,69 +83,69 @@ void main() {
 }
 `;
 
-const shader = ctx.shader(
-    `#version 300 es
-    precision lowp float;
-    layout(location=0)in vec4 aPos;
-    uniform mat4 uMat;
-    uniform vec4 uPos;
-    uniform vec3 uCam;
-    out vec3 ro, hitPos;
+const vert = `#version 300 es
+precision lowp float;
+layout(location=0)in vec4 aPos;
+uniform mat4 uMat;
+uniform vec4 uPos;
+uniform vec3 uCam;
+out vec3 ro, hitPos;
 
-    void main() {
-        gl_Position = uMat * (uPos + aPos);
+void main() {
+    gl_Position = uMat * (uPos + aPos);
 
-        // move cam from global to local space
-        // (would likely need inverse of modelview mat)
-        ro = uCam - uPos.xyz;
+    // move cam from global to local space
+    // (would likely need inverse of modelview mat)
+    ro = uCam - uPos.xyz;
 
-        // obj in local space
-        hitPos = aPos.xyz;
-    }`,
-    frag,
-).use();
+    // obj in local space
+    hitPos = aPos.xyz;
+}`;
 
-// main cube
-const { vao, draw } = ctx.createMesh(
-    Cube(10),
-    [ [0, 3, 24]]
-);
-
-// light cube
-const lightSh = ctx.shader(
-    vertexPos,
-    fragmentStatic
-).use();
-const { vao: lightVao, draw: drawLight } = ctx.createMesh(
-    Cube(3),
-    [
-        [0, 3, 24],
-    ]
-);
-
-const cam = FPSCam3D(.01, 0, 0, 20, 1);
-
-export const update = (dt: number) => {
-    cam.update(dt);
-};
-
-export const render = () => {
-    ctx.clear();
-    const mat = cam.mat();
-
+export const render = (gl: WebGL2RenderingContext, vpMat: mat4, eye: vec3) => {
     // draw main cube
-    vao.bind();
-    shader.use();
-    shader.uniform`uPos`.u4f(0, 0, 0, 0);
-    shader.uniform`uMat`.m4fv(mat);
-    shader.uniform`uCam`.u3f(cam.eye[0], cam.eye[1], cam.eye[2]);
+    bindVAO(gl, vao);
+    useProgram(gl, rmPrg);
+    rmUniform`uPos`.u4f(0, 0, 0, 0);
+    rmUniform`uMat`.m4fv(vpMat);
+    rmUniform`uCam`.u3f(eye[0], eye[1], eye[2]);
     draw();
 
     // draw light cube
-    lightVao.bind();
-    lightSh.use();
-    lightSh.uniform`uMat`.m4fv(mat);
-    lightSh.uniform`uColor`.u3f(1, 1, 1);
-    lightSh.uniform`uPos`.u4f(20, 20, 20, 0);
+    bindVAO(gl, lightVao);
+    useProgram(gl, lightPrg);
+    lightUniform`uMat`.m4fv(vpMat);
+    lightUniform`uColor`.u3f(1, 1, 1);
+    lightUniform`uPos`.u4f(20, 20, 20, 0);
     drawLight();
+};
+
+let init = false, vao: WebGLVertexArrayObject, lightVao: WebGLVertexArrayObject, lightPrg: WebGLProgram, rmPrg: WebGLProgram, rmUniform, lightUniform, draw, drawLight;
+export const setup = (gl: WebGL2RenderingContext) => {
+    CompRender.push(render);
+    if (init) return;
+    init = true;
+
+    // main cube
+    [ vao, draw ] = mesh(
+        gl,
+        Cube(10),
+        [[0, 3, 24]]
+    );
+
+    // light cube
+    [ lightVao, drawLight ] = mesh(
+        gl,
+        Cube(3),
+        [[0, 3, 24]]
+    );
+    rmPrg = shaderProgram(gl, vert, frag);
+    lightPrg = shaderProgram(gl, vertexPos, fragmentStatic);
+
+    rmUniform = uniformFns(gl, rmPrg);
+    lightUniform = uniformFns(gl, lightPrg);
+};
+
+export const teardown = () => {
+    CompRender.splice(CompRender.indexOf(render));
 };
