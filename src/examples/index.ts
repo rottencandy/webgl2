@@ -17,7 +17,7 @@ import { CompPostProcessRun } from "../components/post-process";
 import { Plane } from "../vertices";
 import { CompMotionBlurRun, disableMotionBlur, enableMotionBlur } from "../components/motion-blur";
 import { GL_RG16UI, GL_RG_INTEGER, GL_UNSIGNED_SHORT } from "../core/gl-constants";
-import { setupCam } from "./utils/3dcam";
+import { setupCam } from "../3d/fpscam";
 
 const scenes
 :{ [key: string]: { setup: (gl: WebGL2RenderingContext) => void, teardown: () => void } } = {

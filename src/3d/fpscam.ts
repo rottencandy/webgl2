@@ -1,6 +1,6 @@
-import { CompInput } from '../../components/input';
-import { CameraPerspective } from '../../core/cam';
-import { radians } from '../../core/math';
+import { CameraPerspective } from "../core/cam";
+import { radians } from "../core/math";
+import { CompInput } from "../components/input";
 
 export const setupCam = (speed = .01, x = 0, y = 0, z = 20, aspect = 400 / 300) => {
     const cam = CameraPerspective(radians(45), .1, 500, aspect)
