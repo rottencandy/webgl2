@@ -17,15 +17,15 @@
     "bundle": "./bundle.sh"
   },
   "devDependencies": {
-    "bun-types": "^0.4.0",
-    "esbuild": "^0.17.0",
+    "bun-types": "^0.5.0",
+    "esbuild": "^0.17.4",
     "esbuild-plugin-spglsl": "^0.0.3",
     "html-inline": "^1.2.0",
     "roadroller": "^2.1.0",
-    "spglsl": "^0.2.6",
+    "spglsl": "^0.2.7",
     "uglify-js": "^3.17.4"
   },
-  "dependencies": {
-    "gl-matrix": "^3.4.3"
+  "peerDependencies": {
+    "gl-matrix": ">=3.4.3"
   }
 }
