@@ -33,7 +33,7 @@ const Keys: WatchedKeys = {
     ptrRelativeOffsetY: 0,
 };
 
-export const dirKeysPressed = (): boolean => !!(Keys.left || Keys.right || Keys.up || Keys.down);
+export const dirKeysPressed = (k: WatchedKeys): boolean => !!(k.left || k.right || k.up || k.down);
 
 let justClicked = false;
 

@@ -1,10 +1,10 @@
 // for gl-matrix types
 ///<reference path="../global.d.ts" />
 import mat4 from "gl-matrix/mat4";
-import { clearIntDepth, makeShader, setTextureUnit, shaderProgram, uniformFns, useProgram } from "../core/webgl2-stateless";
+import { clearIntDepth, getUniformLoc, makeShader, setTextureUnit, shaderProgram, useProgram } from "../core/webgl2-stateless";
 import { CompPostProcess } from "./post-process";
 
-let init = false, enabled = false, prg: WebGLProgram, velTex: WebGLTexture, uniform;
+let enabled = false, prg: WebGLProgram, velTex: WebGLTexture, uVel: WebGLUniformLocation;
 
 export const CompMotionBlur: ((gl: WebGL2RenderingContext, mat: mat4) => void)[] = [];
 
@@ -62,21 +62,17 @@ void main() {
 
 const applyMotionBlur = (gl: WebGL2RenderingContext, draw: () => void) => {
     useProgram(gl, prg);
-    setTextureUnit(gl, velTex, uniform('uVel').loc, 1);
+    setTextureUnit(gl, velTex, uVel, 1);
     draw();
 };
 
 export const enableMotionBlur = (gl: WebGL2RenderingContext, tex: WebGLTexture) => {
-    enabled = true;
-    if (init) return;
-    init = true;
     prg = shaderProgram(gl, vert, frag);
-    uniform = uniformFns(gl, prg);
+    uVel = getUniformLoc(gl, prg, 'uVel');
     velTex = tex;
     CompPostProcess.push(applyMotionBlur);
 };
 
 export const disableMotionBlur = () => {
-    enabled = false;
     CompPostProcess.splice(CompPostProcess.indexOf(applyMotionBlur));
 };
