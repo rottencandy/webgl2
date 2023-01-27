@@ -13,11 +13,13 @@ import vec3, {
     set as v3set,
     scale as v3scale,
     add as v3add,
+    subtract as v3sub,
     cross as v3cross,
     normalize as v3normalize,
 } from 'gl-matrix/vec3';
+import { clamp } from './math';
 
-type CamState = {
+export type CamState = {
     /**
      * Move camera along XYZ
      */
@@ -32,7 +34,6 @@ type CamState = {
     moveTo: (x: number, y: number, z: number) => CamState;
     /**
      * Change target focus point
-     * @deprecated not yet implemented
      */
     lookAt: (x: number, y: number, z: number) => CamState;
     /**
@@ -51,6 +52,7 @@ type CamState = {
 };
 
 const MAX_PITCH = Math.PI / 2 - 0.01;
+const UP = v3set(v3create(), 0, 1, 0);
 
 const Camera = (isOrtho: boolean, ...props: number[]): CamState => {
     const projectionMat = isOrtho ?
@@ -61,7 +63,6 @@ const Camera = (isOrtho: boolean, ...props: number[]): CamState => {
     const viewMat = m4create();
 
     const pos = v3create();
-    const up = v3set(v3create(), 0, 1, 0);
     const front = v3set(v3create(), 0, 0, -1);
     // make cam initially point to z=-1
     let yaw = -Math.PI / 2,
@@ -70,7 +71,7 @@ const Camera = (isOrtho: boolean, ...props: number[]): CamState => {
     // temporary cached variables
     const t_move = v3create();
     const t_side = v3create();
-    const t_dir = v3create();
+    const t_front = v3create();
     const t_target = v3create();
 
     const thisObj: CamState = {
@@ -83,11 +84,11 @@ const Camera = (isOrtho: boolean, ...props: number[]): CamState => {
                 v3add(pos, pos, t_move);
             }
             if (y) {
-                v3scale(t_move, up, y);
+                v3scale(t_move, UP, y);
                 v3add(pos, pos, t_move);
             }
             if (x) {
-                v3cross(t_side, up, front);
+                v3cross(t_side, UP, front);
                 v3normalize(t_side, t_side);
                 v3scale(t_move, t_side, x);
                 v3add(pos, pos, t_move);
@@ -97,29 +98,27 @@ const Camera = (isOrtho: boolean, ...props: number[]): CamState => {
         rotate(ptch, yw) {
             pitch -= ptch;
             yaw += yw;
-            if (pitch > MAX_PITCH)
-                pitch = MAX_PITCH;
-            if (pitch < -MAX_PITCH)
-                pitch = -MAX_PITCH;
+            pitch = clamp(pitch, -MAX_PITCH, MAX_PITCH);
 
             const cosPitch = Math.cos(pitch);
-            t_dir[0] = Math.cos(yaw) * cosPitch;
-            t_dir[1] = Math.sin(pitch);
-            t_dir[2] = Math.sin(yaw) * cosPitch;
-            v3normalize(front, t_dir);
+            t_front[0] = Math.cos(yaw) * cosPitch;
+            t_front[1] = Math.sin(pitch);
+            t_front[2] = Math.sin(yaw) * cosPitch;
+            v3normalize(front, t_front);
             return thisObj;
         },
         moveTo(x, y, z) {
             v3set(pos, x, y, z);
             return thisObj;
         },
-        // TODO
-        lookAt(_x, _y, _z) {
-            //v3set(target, x, y, z);
+        lookAt(x, y, z) {
+            v3set(t_front, x, y, z);
+            v3sub(t_front, t_front, pos);
+            v3normalize(front, t_front);
             return thisObj;
         },
         recalculate() {
-            m4lookAt(viewMat, pos, v3add(t_target, pos, front), up);
+            m4lookAt(viewMat, pos, v3add(t_target, pos, front), UP);
             m4mul(thisObj.matrix, projectionMat, viewMat);
             return thisObj;
         },
