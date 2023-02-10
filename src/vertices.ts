@@ -1,7 +1,7 @@
 /** vertex data contains vertices(0) and indices(1) */
 type MeshData = [Float32Array, number[]];
 
-const packData = (d1: Float32Array, d1Step: number, d2: Float32Array, d2Step: number) => {
+export const packData = (d1: Float32Array, d1Step: number, d2: Float32Array, d2Step: number) => {
     const out = new Float32Array(d1.length + d2.length);
     let d1ptr = 0, d2ptr = 0, i = 0;
     while (i < out.length) {

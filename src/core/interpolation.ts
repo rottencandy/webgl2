@@ -21,10 +21,6 @@ export const lerp = (from: number, to: number, weight: number) => {
     return from + (to - from) * weight;
 };
 
-export const clamp = (value: number, min: number, max: number) => {
-    value < min ? min : value > max ? max : value;
-};
-
 /**
 * Returns true every time `interval` ticks have passed.
 */

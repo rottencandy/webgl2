@@ -4,6 +4,10 @@ export const radians = (a: number) => a * Math.PI / 180;
 
 export const rand = (a = 0, b = 1) => b + (a - b) * Math.random();
 
+export const clamp = (value: number, min: number, max: number) => {
+    return value < min ? min : value > max ? max : value;
+};
+
 // https://developer.mozilla.org/en-US/docs/Games/Techniques/2D_collision_detection
 export const AABB = (
     x1: number,

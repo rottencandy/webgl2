@@ -146,7 +146,7 @@ export const v2fset = (gl: GL, loc: Loc, x: number, y: number) => gl.uniform2f(l
 export const v3fset = (gl: GL, loc: Loc, x: number, y: number, z: number) => gl.uniform3f(loc, x, y, z);
 export const v4fset = (gl: GL, loc: Loc, x: number, y: number, z: number, w: number) => gl.uniform4f(loc, x, y, z, w);
 export const m3fset = (gl: GL, loc: Loc, data: Float32List, transpose = false) => gl.uniformMatrix3fv(loc, transpose, data);
-export const m4fset = (gl: GL, loc: Loc, data: Iterable<number>, transpose = false) => gl.uniformMatrix4fv(loc, transpose, data);
+export const m4fset = (gl: GL, loc: Loc, data: Float32List, transpose = false) => gl.uniformMatrix4fv(loc, transpose, data);
 
 const uniformSetterFns = (
     gl: GL,
@@ -166,7 +166,7 @@ const uniformSetterFns = (
             gl.uniform4f(loc, x, y, z, w),
         m3fv: (data: Float32List, transpose = false) =>
             gl.uniformMatrix3fv(loc, transpose, data),
-        m4fv: (data: Iterable<number>, transpose = false) =>
+        m4fv: (data: Float32List, transpose = false) =>
             gl.uniformMatrix4fv(loc, transpose, data),
         u1i: (x: number) =>
             gl.uniform1i(loc, x),
@@ -189,7 +189,7 @@ export const UBO = (gl: GL, name: string, prg: WebGLProgram, vars: string[], loc
 
     // this only needs to be done with one prg,
     // regardless of how many prgs will use the UBO
-    const indices = gl.getUniformIndices(prg, vars) as Iterable<number>;
+    const indices = gl.getUniformIndices(prg, vars);
     const offsets = gl.getActiveUniforms(prg, indices, GL_UNIFORM_OFFSET);
 
     // this needs to be done for every prg that wants to use the UBO

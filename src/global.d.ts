@@ -25,20 +25,20 @@ declare module 'gl-matrix/mat3' {
 
 declare module '*.png' {
     const data: string;
-	export = data;
+	export default data;
 }
 
 declare module '*.glsl' {
     const data: string;
-	export = data;
+	export default data;
 }
 
 declare module '*.vert' {
     const data: string;
-	export = data;
+	export default data;
 }
 
 declare module '*.frag' {
     const data: string;
-	export = data;
+	export default data;
 }

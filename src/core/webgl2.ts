@@ -60,7 +60,7 @@ const uniformSetterFns = (
             gl.uniform4f(loc, x, y, z, w),
         m3fv: (data: Float32List, transpose = false) =>
             gl.uniformMatrix3fv(loc, transpose, data),
-        m4fv: (data: Iterable<number>, transpose = false) =>
+        m4fv: (data: Float32List, transpose = false) =>
             gl.uniformMatrix4fv(loc, transpose, data),
         u1i: (x: number) =>
             gl.uniform1i(loc, x),
@@ -232,7 +232,7 @@ type WebglState = {
     ) => RenderTargetState;
 };
 
-export const createGLContext = (
+export const createGLContextState = (
     canvas: HTMLCanvasElement,
     width = 400,
     height = 300,
