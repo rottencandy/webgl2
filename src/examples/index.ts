@@ -17,7 +17,7 @@ import { CompPostProcessRun } from "../components/post-process";
 import { Plane } from "../vertices";
 import { CompMotionBlurRun, disableMotionBlur, enableMotionBlur } from "../components/motion-blur";
 import { GL_RG16UI, GL_RG_INTEGER, GL_UNSIGNED_SHORT } from "../core/gl-constants";
-import { setupCam } from "../3d/fpscam";
+import { setupCam } from "../3d/orbitcam";
 
 const scenes
 :{ [key: string]: { setup: (gl: WebGL2RenderingContext) => void, teardown: () => void } } = {
@@ -45,10 +45,10 @@ export const runExamples = () => {
 
     // Init
     const canvas = document.getElementById('c') as HTMLCanvasElement, width = 300, height = 300;
-    setupKeyListener(canvas, true);
+    setupKeyListener(canvas, false);
     const gl = createGLContext(canvas, width, height);
     (onresize = () => resize(gl, canvas, width, height))();
-    const cam = setupCam(.01, 0, 5, 20, width / height);
+    const cam = setupCam(30, 50, width / height);
 
     // Post processing
     // setup post process ping-pong framebuffers & attribs
