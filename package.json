@@ -5,8 +5,8 @@
   "author": "Mohammed Saud <md.saud020@gmail.com>",
   "license": "MIT",
   "scripts": {
-    "prebuild": "mkdir -p app && cp assets/* app",
     "build": "bun scripts/build.js",
+    "postbuild": "cp assets/* app",
     "predev": "mkdir -p app && cp assets/* app",
     "dev": "bun scripts/dev.js",
     "uglify": "uglifyjs --compress --mangle --mangle-props regex=/^.[^$]/ -o app/main.js -- app/main.js",
