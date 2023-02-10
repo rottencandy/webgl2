@@ -17,8 +17,8 @@
     "bundle": "./bundle.sh"
   },
   "devDependencies": {
-    "bun-types": "^0.5.0",
-    "esbuild": "^0.17.4",
+    "bun-types": "^0.5.5",
+    "esbuild": "^0.17.7",
     "esbuild-plugin-spglsl": "^0.0.3",
     "html-inline": "^1.2.0",
     "roadroller": "^2.1.0",
