@@ -7,7 +7,7 @@ export const setupCam = (speed = .01, x = 0, y = 0, z = 20, aspect = 400 / 300) 
         .moveTo(x, y, z);
 
     CompInput.push((k, dt) => {
-        const spd = speed * dt;
+        const spd = speed * dt * (k.shift ? 3 : 1);
         const fd = k.up ? spd : 0;
         const bk = k.down ? -spd : 0;
         const lt = k.left ? spd : 0;

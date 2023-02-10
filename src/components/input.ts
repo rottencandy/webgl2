@@ -4,6 +4,7 @@ type WatchedKeys = {
     up: boolean,
     down: boolean,
     space: boolean,
+    shift: boolean,
     esc: boolean,
     clicked: boolean,
     justClicked: boolean,
@@ -21,6 +22,7 @@ const Keys: WatchedKeys = {
     down: false,
 
     space: false,
+    shift: false,
     esc: false,
 
     clicked: false,
@@ -41,8 +43,8 @@ let justClicked = false;
  * Initialize onkey listeners
 */
 export const setupKeyListener = (canvas: HTMLCanvasElement, lockPointer: boolean) => {
-    const setKeyState = (value: boolean) => ({ key: code }) => {
-        switch (code) {
+    const setKeyState = (value: boolean) => ({ key }: { key: string }) => {
+        switch (key) {
             case 'ArrowUp':
             case 'w':
             case 'z':
@@ -66,6 +68,8 @@ export const setupKeyListener = (canvas: HTMLCanvasElement, lockPointer: boolean
                 break;
             case ' ':
                 Keys.space = value;
+            case 'Shift':
+                Keys.shift = value;
         }
     }
 
