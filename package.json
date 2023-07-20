@@ -3,6 +3,7 @@
   "version": "0.0.1",
   "main": "index.js",
   "author": "Mohammed Saud <md.saud020@gmail.com>",
+  "type": "module",
   "license": "MIT",
   "scripts": {
     "build": "node scripts/build.js",
@@ -17,14 +18,14 @@
     "bundle": "./bundle.sh"
   },
   "devDependencies": {
-    "esbuild": "^0.17.7",
+    "esbuild": "^0.18.4",
     "esbuild-plugin-spglsl": "^0.0.3",
     "html-inline": "^1.2.0",
     "roadroller": "^2.1.0",
     "spglsl": "^0.2.7",
     "uglify-js": "^3.17.4"
   },
-  "peerDependencies": {
-    "gl-matrix": ">=3.4.3"
+  "dependencies": {
+    "gl-matrix": "^3.4.3"
   }
 }
