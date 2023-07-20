@@ -18,7 +18,7 @@ const ctx = await esbuild.context({
 
 await ctx.watch();
 const { host, port } = await ctx.serve({ servedir: 'app' });
-await Bun.write(Bun.stdout, `Serving: http://${host}:${port}`);
+console.log(`Serving: http://${host}:${port}`);
 
 process.on('SIGINT', async () => {
     await ctx.dispose();

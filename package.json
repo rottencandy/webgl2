@@ -5,10 +5,10 @@
   "author": "Mohammed Saud <md.saud020@gmail.com>",
   "license": "MIT",
   "scripts": {
-    "build": "bun scripts/build.js",
+    "build": "node scripts/build.js",
     "postbuild": "cp assets/* app",
     "predev": "mkdir -p app && cp assets/* app",
-    "dev": "bun scripts/dev.js",
+    "dev": "node scripts/dev.js",
     "uglify": "uglifyjs --compress --mangle --mangle-props regex=/^.[^$]/ -o app/main.js -- app/main.js",
     "uglify-nomangle": "uglifyjs --compress --mangle -o app/main.js -- app/main.js",
     "uglify-debug": "uglifyjs --compress --mangle --mangle-props regex=/^.[^$]/,debug --name-cache uglify-cache.json -o app/main.js -- app/main.js",
@@ -17,7 +17,6 @@
     "bundle": "./bundle.sh"
   },
   "devDependencies": {
-    "bun-types": "^0.5.5",
     "esbuild": "^0.17.7",
     "esbuild-plugin-spglsl": "^0.0.3",
     "html-inline": "^1.2.0",
