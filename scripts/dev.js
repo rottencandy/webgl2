@@ -6,7 +6,6 @@ const ctx = await esbuild.context({
     bundle: true,
     sourcemap: 'inline',
     charset: 'utf8',
-    target: 'es6',
     format: 'iife',
     outdir: 'app',
     plugins: [glslPlugin({
