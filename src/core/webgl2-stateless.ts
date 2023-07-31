@@ -189,7 +189,7 @@ export const UBO = (gl: GL, name: string, prg: WebGLProgram, vars: string[], loc
 
     // this only needs to be done with one prg,
     // regardless of how many prgs will use the UBO
-    const indices = gl.getUniformIndices(prg, vars);
+    const indices = gl.getUniformIndices(prg, vars) as number[];
     const offsets = gl.getActiveUniforms(prg, indices, GL_UNIFORM_OFFSET);
 
     // this needs to be done for every prg that wants to use the UBO
