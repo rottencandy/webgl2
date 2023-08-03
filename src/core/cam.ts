@@ -22,6 +22,7 @@ import { clamp } from './math';
 export type CamState = {
     /**
      * Move camera along XYZ
+     * IMPORTANT: x & z are relative to facing direction
      */
     move: (x: number, y: number, z: number) => CamState;
     /**
@@ -33,7 +34,7 @@ export type CamState = {
      */
     moveTo: (x: number, y: number, z: number) => CamState;
     /**
-     * Change target focus point
+     * Change target focus point & face direction
      */
     lookAt: (x: number, y: number, z: number) => CamState;
     /**

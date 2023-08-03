@@ -44,7 +44,7 @@ import {
 } from './gl-constants';
 
 /** webgl2 context */
-type GL = WebGL2RenderingContext;
+export type GL = WebGL2RenderingContext;
 /** webgl2 constant */
 type GLConst = number;
 
@@ -320,12 +320,17 @@ export const bindTexture = (gl: GL, tex: WebGLTexture, target: GLConst = GL_TEXT
     return tex;
 };
 
-// TODO find out if filter is mandatory (use gl_nearest always)
+/**
+* Works if not set before use, but defalt filtering might not be what you need
+*/
 export const setTextureFilter = (gl: GL, target: GLConst = GL_TEXTURE_2D, type: GLConst = GL_NEAREST) => {
     gl.texParameteri(target, GL_TEXTURE_MIN_FILTER, type);
     gl.texParameteri(target, GL_TEXTURE_MAG_FILTER, type);
 };
 
+/**
+* Works if not set before use, but defalt wrapping might not be what you need
+*/
 export const setTextureWrap = (gl: GL, target: GLConst = GL_TEXTURE_2D, type: GLConst = GL_CLAMP_TO_EDGE) => {
     gl.texParameteri(target, GL_TEXTURE_WRAP_S, type);
     gl.texParameteri(target, GL_TEXTURE_WRAP_T, type);
