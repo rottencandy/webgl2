@@ -1,6 +1,9 @@
-/** vertex data contains vertices(0) and indices(1) */
-type MeshData = [Float32Array, number[]];
+import { MeshData } from "./core/webgl2-stateless";
 
+/**
+ * Embed d2 array into d1 with d1Step increments for every d1 elements
+ * & d2Step increments for every d2 elements
+ */
 export const packData = (d1: Float32Array, d1Step: number, d2: Float32Array, d2Step: number) => {
     const out = new Float32Array(d1.length + d2.length);
     let d1ptr = 0, d2ptr = 0, i = 0;
@@ -25,12 +28,12 @@ export const Plane = (s: number): MeshData => [
 ];
 
 export const PlaneVerts = (s: number) =>
-    new Float32Array([
-        0, 0,
-        s, 0,
-        s, s,
-        0, s,
-    ]);
+new Float32Array([
+    0, 0,
+    s, 0,
+    s, s,
+    0, s,
+]);
 
 export const planeTexCoords = new Float32Array([
     0, 0,
@@ -43,8 +46,8 @@ export const planeTexCoords = new Float32Array([
 
 // cube {{{
 
-/* Cube vertices include embedded vertex normals */
-export const Cube = (s: number): MeshData => [
+/** Cube vertices include embedded vertex normals */
+    export const Cube = (s: number): MeshData => [
     // vertices
     packData(cubeVerts(s), 3, cubeNorms, 3),
     // indices

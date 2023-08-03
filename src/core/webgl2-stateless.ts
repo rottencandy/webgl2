@@ -50,8 +50,8 @@ type GLConst = number;
 
 export const createGLContext = (
     canvas: HTMLCanvasElement,
-    width = 400,
-    height = 300,
+    width: number,
+    height: number,
 ): GL => {
     const gl = canvas.getContext('webgl2', { antialias: false }) as GL;
     if (!gl)
@@ -407,7 +407,7 @@ export const setActiveTextureUnit = (gl: GL, unit: number) => {
     gl.activeTexture(GL_TEXTURE0 + unit);
 };
 
-type AttribPointers = [
+export type AttribPointers = [
     /* Location in which data is sent to vertex shader */
     loc: number,
     /* Points per vertex */
@@ -431,6 +431,9 @@ type AttribPointers = [
     normalize?: boolean,
 ];
 
+/** vertex data contains vertices(0) and indices(1) */
+export type MeshData = [vertices: Float32Array, indices: number[]];
+
 /**
 * Takes in a set of data, indices, attribs and
 * returns a ready-to-use VAO with loaded draw fn.
@@ -443,7 +446,7 @@ type AttribPointers = [
 */
 export const mesh = (
     gl: GL,
-    [data, indices]: [Float32Array, number[]],
+    [data, indices]: MeshData,
     attribs: AttribPointers[]
 ): [
     /** VAO */
