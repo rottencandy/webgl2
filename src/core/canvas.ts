@@ -6,12 +6,7 @@ export const create2dContext = (
     height: number,
 ): CTX => {
     const ctx = canvas.getContext('2d') as CTX;
-
-    canvas.width = width;
-    canvas.height = height;
-
-    // prepare for text
-    //ctx.font = '';
+    resize2d(canvas, width, height);
 
     return ctx;
 };

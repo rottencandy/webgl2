@@ -59,8 +59,8 @@ export const createGLContext = (
 
     canvas.width = width;
     canvas.height = height;
+    resize(gl, canvas, width, height);
 
-    gl.viewport(0, 0, width, height);
     gl.enable(GL_CULL_FACE);
     gl.enable(GL_DEPTH_TEST);
     gl.enable(GL_BLEND);
