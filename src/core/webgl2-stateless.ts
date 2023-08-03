@@ -471,6 +471,15 @@ export const mesh = (
 };
 
 /**
+* Helper util to combine shader program and util creation
+*/
+export const shader = (gl: GL, vert: string, frag: string):
+    [prg: WebGLProgram, uniformFns: ReturnType<typeof uniformFns>] => {
+    const prg = shaderProgram(gl, vert, frag);
+    return [prg, uniformFns(gl, prg)];
+};
+
+/**
 * Rescale target canvas to match width/height scale ratio
 * Uses window.innerWidth/Height to calculate updated ratio
 * Should ideally be called whenever canvas is rescaled,
