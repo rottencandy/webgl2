@@ -515,7 +515,7 @@ export const renderTarget = (
     internalFormat: GLConst = GL_RGBA,
     format: GLConst = GL_RGBA,
     type: GLConst = GL_UNSIGNED_BYTE,
-): [WebGLFramebuffer, WebGLTexture] => {
+): [fb: WebGLFramebuffer, depth: WebGLTexture] => {
     const fb = gl.createFramebuffer() as WebGLFramebuffer;
     setTexData(gl, tex, null, GL_TEXTURE_2D, 0, internalFormat, width, height, 0, format, type);
     setTextureFilter(gl);
