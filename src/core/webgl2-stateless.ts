@@ -16,6 +16,7 @@ import {
     GL_FLOAT,
     GL_FRAGMENT_SHADER,
     GL_FRAMEBUFFER,
+    GL_INTERLEAVED_ATTRIBS,
     GL_LEQUAL,
     GL_LINEAR,
     GL_LINK_STATUS,
@@ -113,10 +114,11 @@ const createShader = (gl: GL, type: number, source: string) => {
 
 /** Create shader program state.
 * Automatically sets as active program. */
-export const shaderProgram = (gl: GL, vSource: string, fSource: string) => {
+export const shaderProgram = (gl: GL, vSource: string, fSource: string, transform?: string[]) => {
     const prg = gl.createProgram() as WebGLProgram;
     gl.attachShader(prg, createShader(gl, GL_VERTEX_SHADER, vSource));
     gl.attachShader(prg, createShader(gl, GL_FRAGMENT_SHADER, fSource));
+    transform && gl.transformFeedbackVaryings(prg, transform, GL_INTERLEAVED_ATTRIBS);
     gl.linkProgram(prg);
 
     if (!gl.getProgramParameter(prg, GL_LINK_STATUS)) {
@@ -223,10 +225,7 @@ export const unbindUBO = (gl: GL) => {
 export const uniformFns = (gl: GL, prg: WebGLProgram) => uniformSetterFns(gl, prg);
 
 /** Create buffer state */
-export const buffer = (gl: GL) => {
-    const buf = gl.createBuffer() as WebGLBuffer;
-    return buf;
-};
+export const buffer = (gl: GL) => gl.createBuffer() as WebGLBuffer;
 
 // todo: buffer type enum
 export const bindBuffer = (gl: GL, buf: WebGLBuffer, target: GLConst = GL_ARRAY_BUFFER) => {
@@ -473,9 +472,9 @@ export const mesh = (
 /**
 * Helper util to combine shader program and util creation
 */
-export const shader = (gl: GL, vert: string, frag: string):
+export const shader = (gl: GL, vert: string, frag: string, transform?: string[]):
     [prg: WebGLProgram, uniformFns: ReturnType<typeof uniformFns>] => {
-    const prg = shaderProgram(gl, vert, frag);
+    const prg = shaderProgram(gl, vert, frag, transform);
     return [prg, uniformFns(gl, prg)];
 };
 
