@@ -89,7 +89,7 @@ const Camera = (isOrtho: boolean, ...props: number[]): CamState => {
                 v3add(pos, pos, t_move);
             }
             if (x) {
-                v3cross(t_side, UP, front);
+                v3cross(t_side, front, UP);
                 v3normalize(t_side, t_side);
                 v3scale(t_move, t_side, x);
                 v3add(pos, pos, t_move);
