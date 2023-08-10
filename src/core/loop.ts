@@ -1,5 +1,7 @@
 type StepFn = (delta: number) => void;
 
+const FPS = 60;
+
 /**
  * Start the game loop
  * Inspired by:
@@ -7,17 +9,15 @@ type StepFn = (delta: number) => void;
  *
  */
 export const startLoop = (update: StepFn, render: StepFn) => {
-    let last = 0, dt = 0, step = 1 / 60, t = 0;
+    let last = 0, acc = 0, delta = 1e3 / FPS, step = 1 / FPS, t = 0;
     (function loop(now: number) {
-        // Sanity check - absorb random lag spike / frame jumps
-        // (expected delta for 60FPS is 1000/60 = ~16.67ms)
-        dt += now - last;
-        if (dt > 1e3) dt = 0;
+        acc += now - last;
         last = now;
+        // Sanity check - absorb random lag spike / frame jumps
+        if (acc > 1e3) acc = 0;
 
-
-        while (dt > step) {
-            dt -= step;
+        while (acc >= delta) {
+            acc -= delta;
             update(step);
         };
 
