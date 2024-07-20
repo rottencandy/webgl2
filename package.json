@@ -16,12 +16,12 @@
     "bundle": "./bundle.sh"
   },
   "devDependencies": {
-    "esbuild": "^0.18.4",
+    "esbuild": "^0.23.0",
     "esbuild-plugin-spglsl": "^0.0.3",
     "html-inline": "^1.2.0",
     "roadroller": "^2.1.0",
-    "spglsl": "^0.2.7",
-    "uglify-js": "^3.17.4"
+    "spglsl": "^0.2.8",
+    "uglify-js": "^3.19.0"
   },
   "dependencies": {
     "gl-matrix": "^3.4.3"
