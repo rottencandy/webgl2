@@ -1,8 +1,8 @@
 /** Create element node tree with props */
-export const $ = (name: string, props: any = {}, ...children: (string | Node)[]) => {
+export const $ = <K extends keyof HTMLElementTagNameMap>(name: K, props: Partial<HTMLElementTagNameMap[K]> = {}, ...children: (string | Node)[]) => {
     const ele = document.createElement(name);
     for (let k in props) {
-        ele[k] = props[k];
+        ele[k] = props[k]!;
     }
     if (props.style) {
         for (let k in props.style) {
